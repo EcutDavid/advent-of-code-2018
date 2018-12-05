@@ -16,9 +16,9 @@ func format(src string) []int {
 	dst := make([]int, len(src))
 	for i := 0; i < len(src); i++ {
 		if src[i] >= uAAsc && src[i] <= uZAsc {
-			dst[i] = int(src[i]) - int(uAAsc)
+			dst[i] = int(src[i]) - int(uAAsc) + 1
 		} else {
-			dst[i] = -(int(src[i]) - int(lAAsc))
+			dst[i] = -(int(src[i]) - int(lAAsc) + 1)
 		}
 	}
 	return dst
@@ -41,7 +41,7 @@ func firstChallenge() {
 				cur = j
 				continue
 			}
-			if (arr[cur] == -arr[j]) && (s[cur] != s[j]) {
+			if arr[cur] == -arr[j] {
 				gone[cur], gone[j], cur, continueLoop = true, true, -1, true
 			} else {
 				cur = j
@@ -85,7 +85,7 @@ func secondChallenge() {
 					cur = j
 					continue
 				}
-				if (arr[cur] == -arr[j]) && (s[cur] != s[j]) {
+				if arr[cur] == -arr[j] {
 					gone[cur], gone[j], cur, continueLoop = true, true, -1, true
 				} else {
 					cur = j
