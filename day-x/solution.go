@@ -2,6 +2,10 @@ package main
 
 import "os"
 
+func getInput() {
+
+}
+
 func firstChallenge() {
 
 }

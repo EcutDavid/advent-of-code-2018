@@ -122,18 +122,9 @@ func secondChallenge() {
 		}
 	}
 	width := maxX + 1
-	board := make([][]int, width*(maxY+1))
 
-	for i := 0; i < len(board); i++ {
-		board[i] = []int{math.MaxInt32, -1}
-	}
-	for i := 0; i < len(xyList); i++ {
-		index := xyList[i][0] + xyList[i][1]*width
-		bfs(board, index, width, maxY+1, i+1)
-	}
-
-	total := 0
-	for i := 0; i < len(board); i++ {
+	total, boardLen := 0, width*(maxY+1)
+	for i := 0; i < boardLen; i++ {
 		x, y := i%width, i/width
 		sum := 0
 		for i := 0; i < len(xyList); i++ {
