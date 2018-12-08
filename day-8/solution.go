@@ -23,42 +23,33 @@ type node struct {
 	metadata []int
 }
 
+func getMetaData(nums []int, metaLen, pointer int) []int {
+	res := []int{}
+	for i := 0; i < metaLen; i++ {
+		res = append(res, nums[i+pointer])
+	}
+	return res
+}
+
 func buildTree(nums []int, count, l int, parent *node) int {
 	pointer := l
 	for count > 0 {
 		count--
-		metaLen, newNode := nums[pointer+1], node{
-			[]*node{},
-			[]int{},
-		}
+		metaLen, newNode := nums[pointer+1], node{[]*node{}, []int{}}
 		parent.children = append(parent.children, &newNode)
 
 		pointer = buildTree(nums, nums[pointer], pointer+2, &newNode)
-		for i := 0; i < metaLen; i++ {
-			newNode.metadata = append(newNode.metadata, nums[pointer+i])
-		}
+		newNode.metadata = getMetaData(nums, metaLen, pointer)
 		pointer += metaLen
 	}
 	return pointer
 }
 
-func walkTree(root *node) {
-	fmt.Println(root.metadata)
-	for _, child := range root.children {
-		walkTree(child)
-	}
-}
-
 func build(nums []int) *node {
-	root := node{
-		[]*node{},
-		[]int{},
-	}
-	r := len(nums) - nums[1] - 1
-	buildTree(nums, nums[0], 2, &root)
-	for i := r + 1; i < len(nums); i++ {
-		root.metadata = append(root.metadata, nums[i])
-	}
+	root := node{[]*node{}, []int{}}
+
+	pointer := buildTree(nums, nums[0], 2, &root)
+	root.metadata = getMetaData(nums, nums[1], pointer)
 	return &root
 }
 
