@@ -23,7 +23,7 @@ func (l *dobuleLinkedList) delete() *dobuleLinkedList {
 	return res
 }
 
-func betterClac(n, p int) {
+func calc(n, p int) {
 	score, node := make([]int64, p), &dobuleLinkedList{val: 0}
 	node.next, node.prev = node, node
 
@@ -51,12 +51,7 @@ func betterClac(n, p int) {
 }
 
 func main() {
-	betterClac(9, 25)
-	betterClac(10, 1618)
-	betterClac(13, 7999)
-	betterClac(17, 1104)
-	betterClac(21, 6111)
-	betterClac(30, 5807)
-	betterClac(403, 71920)
-	betterClac(403, 7192000)
+	calc(9, 25)
+	calc(403, 71920)
+	calc(403, 7192000)
 }
