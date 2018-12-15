@@ -7,53 +7,56 @@ import (
 	"strconv"
 )
 
-func firstChallenge() {
+var plus = "+"[0]
+
+func parseInput() []int {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(bufio.ScanWords)
-	res := 0
 
+	nums := []int{}
 	for scanner.Scan() {
-		line := scanner.Text()
-		num, _ := strconv.Atoi(line[1:])
-		if line[0:1] == "+" {
-			res += num
-		} else {
-			res -= num
+		l := scanner.Text()
+		num, _ := strconv.Atoi(l[1:])
+		if l[0] != plus {
+			num *= -1
 		}
+		nums = append(nums, num)
 	}
-	fmt.Println(res)
+	return nums
 }
 
-func secondChallenge() {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Split(bufio.ScanWords)
-	cur, pointer, nums, memo := 0, 0, []int{}, map[int]bool{0: true}
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		num, _ := strconv.Atoi(line[1:])
-		if line[0:1] == "+" {
-			nums = append(nums, num)
-		} else {
-			nums = append(nums, -num)
-		}
+func getSum(src []int) int {
+	sum := 0
+	for _, v := range src {
+		sum += v
 	}
+	return sum
+}
 
+func firstChallenge(src []int) {
+	fmt.Println(getSum(src))
+}
+
+func getDupF(src []int) int {
+	memo, cur, pointer := map[int]bool{0: true}, 0, 0
 	for {
-		cur, pointer = cur+nums[pointer], (pointer+1)%len(nums)
-		if !memo[cur] {
-			memo[cur] = true
-		} else {
-			fmt.Println(cur)
-			os.Exit(0)
+		cur, pointer = cur+src[pointer], (pointer+1)%len(src)
+		if memo[cur] {
+			return cur
 		}
+		memo[cur] = true
 	}
+}
+
+func secondChallenge(src []int) {
+	fmt.Println(getDupF(src))
 }
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "2" {
-		secondChallenge()
-	} else {
-		firstChallenge()
-	}
+	input := parseInput()
+	fmt.Println("first challenge:")
+	firstChallenge(input)
+	fmt.Println("****************")
+	fmt.Println("second challenge:")
+	secondChallenge(input)
 }
