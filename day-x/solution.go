@@ -1,11 +1,9 @@
 package main
 
-import (
-	"os"
-)
+import "fmt"
 
-func getInput() {
-
+func parseInput() int {
+	return -1
 }
 
 func firstChallenge() {
@@ -17,9 +15,10 @@ func secondChallenge() {
 }
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "2" {
-		secondChallenge()
-	} else {
-		firstChallenge()
-	}
+	parseInput()
+	fmt.Println("first challenge:")
+	firstChallenge()
+	fmt.Println("****************")
+	fmt.Println("second challenge:")
+	secondChallenge()
 }
