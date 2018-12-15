@@ -40,6 +40,40 @@ func (u unitList) Less(i, j int) bool {
 	return u[i].pos[0] < u[j].pos[0]
 }
 
+// DEBUG only
+func draw(board board, units unitList) {
+	unitMap := genUnitMap(units)
+	for y, line := range board {
+		for x, slot := range line {
+			v, ok := unitMap[[2]int{y, x}]
+			if ok {
+				if v.isElf {
+					fmt.Print("E")
+				} else {
+					fmt.Print("G")
+				}
+				continue
+			}
+			if slot == wall {
+				fmt.Print("#")
+			} else {
+				fmt.Print(".")
+			}
+		}
+		fmt.Println()
+	}
+}
+
+// DEBUG only
+func reportHP(units unitList) {
+	for _, v := range units {
+		if v.die {
+			continue
+		}
+		fmt.Println("isElf", v.isElf, "line:", v.pos[0]+1, "hp:", v.hp)
+	}
+}
+
 func parseInput() (board, unitList) {
 	scanner := bufio.NewScanner(os.Stdin)
 	board, y, unites := [][]int{}, 0, unitList{}
@@ -100,29 +134,6 @@ func genAttackMap(units unitList) map[[2]int]uint {
 		}
 	}
 	return res
-}
-
-func draw(board board, units unitList) {
-	unitMap := genUnitMap(units)
-	for y, line := range board {
-		for x, slot := range line {
-			v, ok := unitMap[[2]int{y, x}]
-			if ok {
-				if v.isElf {
-					fmt.Print("E")
-				} else {
-					fmt.Print("G")
-				}
-				continue
-			}
-			if slot == wall {
-				fmt.Print("#")
-			} else {
-				fmt.Print(".")
-			}
-		}
-		fmt.Println()
-	}
 }
 
 var dirs = [4][2]int{
@@ -237,42 +248,20 @@ func isDone(units unitList) bool {
 	}
 	return (elfSum == 0) || (gSum == 0)
 }
-func getScore(round int, units unitList) int64 {
-	e, g := []int{}, []int{}
-	for _, v := range units {
-		if v.die {
-			continue
-		}
-		if v.isElf {
-			e = append(e, v.hp)
-		} else {
-			g = append(g, v.hp)
-		}
-	}
-	sum := 0
-	for _, v := range e {
-		sum += v
-	}
-	for _, v := range g {
-		sum += v
-	}
-	fmt.Println("round", round)
-	return int64(sum) * int64(round)
-}
 
-func reportHP(units unitList) {
+func getScore(round int, units unitList) (sum int) {
 	for _, v := range units {
 		if v.die {
 			continue
 		}
-		fmt.Println("isElf", v.isElf, "line:", v.pos[0]+1, "hp:", v.hp)
+		sum += v.hp
 	}
+	return sum * round
 }
 
 func simulate(board board, units unitList, elfPower int) {
 	// 5... just a big number choosed randomly
 	for i := 0; i < 5000000; i++ {
-		fmt.Println("round", i+1)
 		sort.Sort(units)
 		done, doneEarly := false, true
 		for i := 0; i < len(units); i++ {
@@ -297,7 +286,6 @@ func simulate(board board, units unitList, elfPower int) {
 			}
 			if isDone(units) {
 				done = true
-				fmt.Println("hello world")
 				if i == (len(units) - 1) {
 					doneEarly = false
 				}
@@ -305,8 +293,6 @@ func simulate(board board, units unitList, elfPower int) {
 			}
 		}
 
-		// draw(board, units)
-		// reportHP(units)
 		if done {
 			if doneEarly {
 				fmt.Println(getScore(i, units))
@@ -334,7 +320,6 @@ func secondChallenge(board board, units unitList) {
 			}
 		}
 		if works {
-			fmt.Println("ELF***", i, "***ELF")
 			os.Exit(0)
 		}
 	}
@@ -348,5 +333,5 @@ func main() {
 	firstChallenge(board, units)
 	fmt.Println("****************")
 	fmt.Println("second challenge:")
-	// secondChallenge(board, listCopy)
+	secondChallenge(board, listCopy)
 }
