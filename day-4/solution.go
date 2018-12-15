@@ -25,19 +25,13 @@ func parseInput() []lineMeta {
 	for _, line := range rawLines {
 		var t1, t2, t3, t4, t5 int64 = 0, 0, 0, 0, 0
 		fmt.Sscanf(line[:19], "[%d-%d-%d %d:%d]", &t1, &t2, &t3, &t4, &t5)
+		guard, time := -1, int(t5)
 
 		if line[19:19+5] == "Guard" {
 			words := strings.Split(line[19:], " ")
-			id, _ := strconv.Atoi(words[1][1:])
-			lines = append(lines, lineMeta{
-				guard: id,
-			})
-		} else {
-			lines = append(lines, lineMeta{
-				time:  int(t5),
-				guard: -1,
-			})
+			guard, _ = strconv.Atoi(words[1][1:])
 		}
+		lines = append(lines, lineMeta{guard, time})
 	}
 	return lines
 }
