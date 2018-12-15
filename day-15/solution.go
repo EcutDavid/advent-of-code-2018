@@ -1,4 +1,4 @@
-// A great question!!!!!........ 3.6 hours spent.... Clean code after some rest.
+// A great DFS problem!
 package main
 
 import (
@@ -40,7 +40,7 @@ func (u unitList) Less(i, j int) bool {
 	return u[i].pos[0] < u[j].pos[0]
 }
 
-// DEBUG only
+// Only for DEBUG
 func draw(board board, units unitList) {
 	unitMap := genUnitMap(units)
 	for y, line := range board {
@@ -64,7 +64,7 @@ func draw(board board, units unitList) {
 	}
 }
 
-// DEBUG only
+// Only for DEBUG
 func reportHP(units unitList) {
 	for _, v := range units {
 		if v.die {
@@ -160,26 +160,16 @@ func bfs(board board, u unit, attackMap map[[2]int]uint, unitMap map[[2]int]*uni
 
 	visited, parent := map[[2]int]bool{u.pos: true}, map[[2]int][2]int{}
 	queue, distance := [][2]int{u.pos}, map[[2]int]int{u.pos: 0}
-	decisions, bestDistance := [][2]int{}, 0
+	decisions := [][2]int{}
 	for len(queue) > 0 {
 		task := queue[0]
-		if len(decisions) > 0 && (distance[task] > bestDistance) {
-			bestDecisionIndex, min := 0, math.MaxInt32
-			for k, v := range decisions {
-				score := v[0]*len(board[0]) + v[1]
-				if score < min {
-					min, bestDecisionIndex = score, k
-				}
-			}
-			return true, decisions[bestDecisionIndex]
-		}
 		_, okay := attackMap[task]
 		if okay && canAttack(u, task, attackMap) {
 			taskCopy := task
 			for parent[taskCopy] != u.pos {
 				taskCopy = parent[taskCopy]
 			}
-			decisions, bestDistance = append(decisions, taskCopy), distance[task]
+			return true, taskCopy
 		}
 		queue = queue[1:]
 		for i := 0; i < 4; i++ {
@@ -202,21 +192,20 @@ func bfs(board board, u unit, attackMap map[[2]int]uint, unitMap map[[2]int]*uni
 }
 
 func attack(u unit, unitMap map[[2]int]*unit, power int) {
-	decision := [][2]int{}
+	decisions := [][2]int{}
 	for _, v := range dirs {
 		newPos := [2]int{u.pos[0] + v[0], u.pos[1] + v[1]}
 		target, ok := unitMap[newPos]
-		// Can attack, wow......
 		if ok && target.isElf != u.isElf {
-			decision = append(decision, newPos)
+			decisions = append(decisions, newPos)
 		}
 	}
-	if len(decision) == 0 {
+	if len(decisions) == 0 {
 		return
 	}
 
-	sameHP, lastHP, minHp, minHpIndex := true, unitMap[decision[0]].hp, math.MaxInt32, 0
-	for k, v := range decision {
+	sameHP, lastHP, minHp, minHpIndex := true, unitMap[decisions[0]].hp, math.MaxInt32, 0
+	for k, v := range decisions {
 		if minHp > unitMap[v].hp {
 			minHpIndex, minHp = k, unitMap[v].hp
 		}
@@ -224,9 +213,9 @@ func attack(u unit, unitMap map[[2]int]*unit, power int) {
 			sameHP = false
 		}
 	}
-	target := unitMap[decision[0]]
+	target := unitMap[decisions[0]]
 	if !sameHP {
-		target = unitMap[decision[minHpIndex]]
+		target = unitMap[decisions[minHpIndex]]
 	}
 	target.hp -= power
 	if target.hp <= 0 {
@@ -241,12 +230,18 @@ func isDone(units unitList) bool {
 			continue
 		}
 		if v.isElf {
+			if gSum > 0 {
+				return false
+			}
 			elfSum++
 		} else {
+			if elfSum > 0 {
+				return false
+			}
 			gSum++
 		}
 	}
-	return (elfSum == 0) || (gSum == 0)
+	return true
 }
 
 func getScore(round int, units unitList) (sum int) {
