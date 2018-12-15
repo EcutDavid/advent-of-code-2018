@@ -120,18 +120,10 @@ func genAttackMap(units unitList) map[[2]int]uint {
 		if v.isElf {
 			slot = goblin
 		}
-		if res[[2]int{v.pos[0] + 1, v.pos[1]}]&slot == 0 {
-			res[[2]int{v.pos[0] + 1, v.pos[1]}] += slot
-		}
-		if res[[2]int{v.pos[0] - 1, v.pos[1]}]&slot == 0 {
-			res[[2]int{v.pos[0] - 1, v.pos[1]}] += slot
-		}
-		if res[[2]int{v.pos[0], v.pos[1] + 1}]&slot == 0 {
-			res[[2]int{v.pos[0], v.pos[1] + 1}] += slot
-		}
-		if res[[2]int{v.pos[0], v.pos[1] - 1}]&slot == 0 {
-			res[[2]int{v.pos[0], v.pos[1] - 1}] += slot
-		}
+		res[[2]int{v.pos[0] + 1, v.pos[1]}] |= slot
+		res[[2]int{v.pos[0] - 1, v.pos[1]}] |= slot
+		res[[2]int{v.pos[0], v.pos[1] + 1}] |= slot
+		res[[2]int{v.pos[0], v.pos[1] - 1}] |= slot
 	}
 	return res
 }
