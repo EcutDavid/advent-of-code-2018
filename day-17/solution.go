@@ -95,115 +95,106 @@ func genBoard(xList, yList [][3]int) ([][]int, int) {
 
 func simulate(board [][]int) {
 	h, w := len(board), len(board[0])
-	//Just a random number big enough.
-	for f := 0; f < 9000; f++ {
+	simulatePoint := func(i, j int) {
+		if board[i][j] != spring {
+			return
+		}
 		// Generate new spring vertically
-		for i := 0; i < (h - 1); i++ {
-			for j := 0; j < w; j++ {
-				if board[i][j] != spring {
-					continue
-				}
-				if board[i+1][j] == sand {
-					y := i + 1
-					for y < h && board[y][j] == sand {
-						board[y][j], y = spring, y+1
-					}
-					continue
-				}
+		if board[i+1][j] == sand {
+			y := i + 1
+			for y < h && board[y][j] == sand {
+				board[y][j], y = spring, y+1
 			}
+			return
 		}
 
 		// Generate new solid
-		for i := (h - 2); i >= 0; i-- {
-			for j := 0; j < w; j++ {
-				if board[i][j] != spring {
-					continue
-				}
-				veryLeft, veryRight := j, j
-				for k := j - 1; k >= 0; k-- {
-					if board[i][k] == wall {
-						break
-					}
-					veryLeft = k
-				}
-				for k := j + 1; k < w; k++ {
-					if board[i][k] == wall {
-						break
-					}
-					veryRight = k
-				}
-				canFill := true
-				for k := veryLeft; k <= veryRight; k++ {
-					// A new solid can only grow from wall or other solid
-					if board[i+1][k] != solid && board[i+1][k] != wall {
-						canFill = false
-					}
-				}
-				if !canFill {
-					continue
-				}
-				for k := veryLeft; k <= veryRight; k++ {
-					board[i][k] = solid
-				}
+		veryLeft, veryRight := j, j
+		for k := j - 1; k >= 0; k-- {
+			if board[i][k] == wall {
+				break
+			}
+			veryLeft = k
+		}
+		for k := j + 1; k < w; k++ {
+			if board[i][k] == wall {
+				break
+			}
+			veryRight = k
+		}
+		canFill := true
+		for k := veryLeft; k <= veryRight; k++ {
+			// A new solid can only grow from wall or other solid
+			if board[i+1][k] != solid && board[i+1][k] != wall {
+				canFill = false
 			}
 		}
+		if canFill {
+			for k := veryLeft; k <= veryRight; k++ {
+				board[i][k] = solid
+			}
+			return
+		}
 
-		// Generate new spring
-		for i := (h - 2); i >= 0; i-- {
+		// Generate new spring that "overflow"
+		veryLeft, veryRight = j, j
+		for k := j - 1; k >= 0; k-- {
+			if board[i][k] == wall {
+				break
+			}
+			if board[i+1][k] != sand {
+				veryLeft = k
+			} else if board[i+1][k+1] == wall {
+				veryLeft = k
+				break
+			} else {
+				break
+			}
+		}
+		for k := j + 1; k < w; k++ {
+			if board[i][k] == wall {
+				break
+			}
+			if board[i+1][k] != sand {
+				veryRight = k
+			} else if board[i+1][k-1] == wall {
+				veryRight = k
+				break
+			} else {
+				break
+			}
+		}
+		if veryLeft == veryRight {
+			return
+		}
+
+		canFill = true
+		for k := veryLeft; k <= veryRight; k++ {
+			if k == veryLeft && board[i+1][k+1] == wall {
+				continue
+			}
+			if k == veryRight && board[i+1][k-1] == wall {
+				continue
+			}
+			// A new spring can only grow from wall or solid, except the very left and very right one
+			if board[i+1][k] != solid && board[i+1][k] != wall {
+				canFill = false
+			}
+		}
+		if !canFill {
+			return
+		}
+		for k := veryLeft; k <= veryRight; k++ {
+			board[i][k] = spring
+		}
+	}
+
+	//Just a random number big enough,
+	//each round(f) Fu
+	for r := 0; r < 9000; r++ {
+		for i := 0; i < (h - 1); i++ {
 			for j := 0; j < w; j++ {
-				if board[i][j] != spring {
-					continue
-				}
-				veryLeft, veryRight := j, j
-				for k := j - 1; k >= 0; k-- {
-					if board[i][k] == wall {
-						break
-					}
-					if board[i+1][k] != sand {
-						veryLeft = k
-					} else if board[i+1][k+1] == wall {
-						veryLeft = k
-						break
-					} else {
-						break
-					}
-				}
-				for k := j + 1; k < w; k++ {
-					if board[i][k] == wall {
-						break
-					}
-					if board[i+1][k] != sand {
-						veryRight = k
-					} else if board[i+1][k-1] == wall {
-						veryRight = k
-						break
-					} else {
-						break
-					}
-				}
-				if veryLeft == veryRight {
-					continue
-				}
-
-				canFill := true
-				for k := veryLeft; k <= veryRight; k++ {
-					if k == veryLeft && board[i+1][k+1] == wall {
-						continue
-					}
-					if k == veryRight && board[i+1][k-1] == wall {
-						continue
-					}
-					// A new spring can only grow from wall or solid, except the very left and very right one
-					if board[i+1][k] != solid && board[i+1][k] != wall {
-						canFill = false
-					}
-				}
-				if !canFill {
-					continue
-				}
-				for k := veryLeft; k <= veryRight; k++ {
-					board[i][k] = spring
-				}
+				simulatePoint(i, j)
 			}
 		}
 	}
