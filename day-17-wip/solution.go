@@ -9,7 +9,7 @@ import (
 const (
 	sand = iota
 	wall
-	water
+	spring
 	solid
 )
 
@@ -79,7 +79,7 @@ func genBoard(xList, yList [][3]int) [][]int {
 		maxX, minX = max(v[2], maxX), min(v[1], minX)
 		maxY = max(v[0], maxY)
 	}
-	maxX, minX = maxX+1, minX-1
+	maxX, minX = maxX+25, minX-25
 	width, height := maxX-minX+1, maxY-minY+1
 
 	board := make([][]int, height)
@@ -97,50 +97,32 @@ func genBoard(xList, yList [][3]int) [][]int {
 			board[v[0]][i-minX] = wall
 		}
 	}
-	board[0][500-minX] = water
+	board[0][500-minX] = spring
 	return board
 }
 
 func simulate(board [][]int) {
 	h, w := len(board), len(board[0])
-	for {
-		// As long as there are water in the last layer, we end
-		end := false
-		for i := 0; i < w; i++ {
-			if board[h-1][i] == water {
-				end = true
-			}
-		}
-		if end {
-			break
-		}
-
-		hasFlowY := false
+	//TODO: improve max
+	for f := 0; f < 9000; f++ {
 		for i := 0; i < (h - 1); i++ {
 			for j := 0; j < w; j++ {
-				if board[i][j] != water {
+				if board[i][j] != spring {
 					continue
 				}
 				if board[i+1][j] == sand {
-					hasFlowY = true
 					y := i + 1
 					for y < h && board[y][j] == sand {
-						board[y][j], y = water, y+1
+						board[y][j], y = spring, y+1
 					}
 					continue
 				}
 			}
 		}
-		// Cannot grow vertically
-		if hasFlowY {
-			continue
-		}
 
-		filledSolid := false
-		// only w can generate S
-		for i := (h - 1); i >= 0; i-- {
+		for i := (h - 2); i >= 0; i-- {
 			for j := 0; j < w; j++ {
-				if board[i][j] != water {
+				if board[i][j] != spring {
 					continue
 				}
 				veryLeft, veryRight := j, j
@@ -148,40 +130,33 @@ func simulate(board [][]int) {
 					if board[i][k] == wall {
 						break
 					}
-					veryLeft--
+					veryLeft = k
 				}
 				for k := j + 1; k < w; k++ {
 					if board[i][k] == wall {
 						break
 					}
-					veryRight++
+					veryRight = k
 				}
-				// fmt.Println(i, veryLeft, veryRight)
 				canFill := true
 				for k := veryLeft; k <= veryRight; k++ {
-					if board[i+1][k] == sand {
+					// A new solid can only grow from wall or other solid
+					if board[i+1][k] != solid && board[i+1][k] != wall {
 						canFill = false
 					}
 				}
-				if canFill {
-					for k := veryLeft; k <= veryRight; k++ {
-						if board[i][k] != water {
-							filledSolid = true
-						}
-						board[i][k] = solid
-					}
+				if !canFill {
+					continue
+				}
+				for k := veryLeft; k <= veryRight; k++ {
+					board[i][k] = solid
 				}
 			}
 		}
 
-		// Need more water
-		if filledSolid {
-			continue
-		}
-		filledWater := false
-		for i := (h - 1); i >= 0; i-- {
+		for i := (h - 2); i >= 0; i-- {
 			for j := 0; j < w; j++ {
-				if board[i][j] != water {
+				if board[i][j] != spring {
 					continue
 				}
 				veryLeft, veryRight := j, j
@@ -189,8 +164,11 @@ func simulate(board [][]int) {
 					if board[i][k] == wall {
 						break
 					}
-					if board[i+1][k] != sand || board[i+1][k+1] == wall {
-						veryLeft--
+					if board[i+1][k] != sand {
+						veryLeft = k
+					} else if board[i+1][k+1] == wall {
+						veryLeft = k
+						break
 					} else {
 						break
 					}
@@ -199,25 +177,41 @@ func simulate(board [][]int) {
 					if board[i][k] == wall {
 						break
 					}
-					if board[i+1][k] != sand || board[i+1][k-1] == wall {
-						veryRight++
+					if board[i+1][k] != sand {
+						veryRight = k
+					} else if board[i+1][k-1] == wall {
+						veryRight = k
+						break
 					} else {
 						break
 					}
 				}
-				// fmt.Println(i, veryLeft, veryRight)
+				if veryLeft == veryRight {
+					continue
+				}
+
+				canFill := true
 				for k := veryLeft; k <= veryRight; k++ {
-					board[i][k] = water
-					if board[i][k] != water {
-						filledWater = true
+					// fmt.Println(w, h, i+1, k+1, veryLeft, veryRight)
+					if k == veryLeft && board[i+1][k+1] == wall {
+						continue
+					}
+					if k == veryRight && board[i+1][k-1] == wall {
+						continue
+					}
+					// A new spring can only grow from wall or solid, except the very left and very right one
+					if board[i+1][k] != solid && board[i+1][k] != wall {
+						canFill = false
 					}
 				}
-			}
-			if filledWater {
-				break
+				if !canFill {
+					continue
+				}
+				for k := veryLeft; k <= veryRight; k++ {
+					board[i][k] = spring
+				}
 			}
 		}
-		drawBoard(board)
 	}
 }
 
@@ -226,8 +220,8 @@ func firstChallenge(xList, yList [][3]int) {
 	simulate(board)
 	h, w, sum := len(board), len(board[0]), 0
 	for i := 1; i < h; i++ {
-		for j := 1; j < (w - 1); j++ {
-			if board[i][j] == water {
+		for j := 0; j < w; j++ {
+			if board[i][j] == spring || board[i][j] == solid {
 				sum++
 			}
 		}
