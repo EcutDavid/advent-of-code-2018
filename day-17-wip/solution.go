@@ -131,12 +131,13 @@ func simulate(board [][]int) {
 				}
 			}
 		}
-		// Cannot grow horizontally
+		// Cannot grow vertically
 		if hasFlowY {
-			// drawBoard(board)
 			continue
 		}
+
 		filledSolid := false
+		// only w can generate S
 		for i := (h - 1); i >= 0; i-- {
 			for j := 0; j < w; j++ {
 				if board[i][j] != water {
@@ -147,21 +148,13 @@ func simulate(board [][]int) {
 					if board[i][k] == wall {
 						break
 					}
-					if board[i+1][k] != sand || board[i+1][k+1] == wall {
-						veryLeft--
-					} else {
-						break
-					}
+					veryLeft--
 				}
 				for k := j + 1; k < w; k++ {
 					if board[i][k] == wall {
 						break
 					}
-					if board[i+1][k] != sand || board[i+1][k-1] == wall {
-						veryRight++
-					} else {
-						break
-					}
+					veryRight++
 				}
 				// fmt.Println(i, veryLeft, veryRight)
 				canFill := true
@@ -224,7 +217,7 @@ func simulate(board [][]int) {
 				break
 			}
 		}
-		// drawBoard(board)
+		drawBoard(board)
 	}
 }
 
