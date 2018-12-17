@@ -13,9 +13,8 @@ const (
 	solid
 )
 
-// Debug only
+// Only for debug
 func drawBoard(board [][]int) {
-	fmt.Println("A")
 	for _, line := range board {
 		for _, v := range line {
 			if v == wall {
@@ -31,29 +30,6 @@ func drawBoard(board [][]int) {
 		}
 		fmt.Println()
 	}
-	fmt.Println("B")
-}
-
-func parseInput() ([][3]int, [][3]int) {
-	xList, yList := [][3]int{}, [][3]int{}
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		a, b, c, d, e := "", "", 0, 0, 0
-		fmt.Sscanf(line, "%1s=%d, %1s=%d..%d", &a, &c, &b, &d, &e)
-		if a == "x" {
-			// if e > 100 {
-			// 	continue
-			// }
-			xList = append(xList, [3]int{c, d, e})
-		} else {
-			// if c > 100 {
-			// 	continue
-			// }
-			yList = append(yList, [3]int{c, d, e})
-		}
-	}
-	return xList, yList
 }
 
 func min(a, b int) int {
@@ -69,18 +45,34 @@ func max(a, b int) int {
 	return a
 }
 
-func genBoard(xList, yList [][3]int) [][]int {
-	maxX, minX, maxY, minY := 500, 500, 1, 0
+func parseInput() ([][3]int, [][3]int) {
+	xList, yList := [][3]int{}, [][3]int{}
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		line := scanner.Text()
+		a, b, c, d, e := "", "", 0, 0, 0
+		fmt.Sscanf(line, "%1s=%d, %1s=%d..%d", &a, &c, &b, &d, &e)
+		if a == "x" {
+			xList = append(xList, [3]int{c, d, e})
+		} else {
+			yList = append(yList, [3]int{c, d, e})
+		}
+	}
+	return xList, yList
+}
+
+func genBoard(xList, yList [][3]int) ([][]int, int) {
+	maxX, minX, maxY, minY := 500, 500, 1, 500
 	for _, v := range xList {
 		maxX, minX = max(v[0], maxX), min(v[0], minX)
-		maxY = max(v[2], maxY)
+		maxY, minY = max(v[2], maxY), min(v[1], minY)
 	}
 	for _, v := range yList {
 		maxX, minX = max(v[2], maxX), min(v[1], minX)
-		maxY = max(v[0], maxY)
+		maxY, minY = max(v[0], maxY), min(v[0], minY)
 	}
 	maxX, minX = maxX+25, minX-25
-	width, height := maxX-minX+1, maxY-minY+1
+	width, height := maxX-minX+1, maxY-0+1
 
 	board := make([][]int, height)
 	for i := 0; i < height; i++ {
@@ -98,13 +90,14 @@ func genBoard(xList, yList [][3]int) [][]int {
 		}
 	}
 	board[0][500-minX] = spring
-	return board
+	return board, minY
 }
 
 func simulate(board [][]int) {
 	h, w := len(board), len(board[0])
-	//TODO: improve max
+	//Just a random number big enough.
 	for f := 0; f < 9000; f++ {
+		// Generate new spring vertically
 		for i := 0; i < (h - 1); i++ {
 			for j := 0; j < w; j++ {
 				if board[i][j] != spring {
@@ -120,6 +113,7 @@ func simulate(board [][]int) {
 			}
 		}
 
+		// Generate new solid
 		for i := (h - 2); i >= 0; i-- {
 			for j := 0; j < w; j++ {
 				if board[i][j] != spring {
@@ -154,6 +148,7 @@ func simulate(board [][]int) {
 			}
 		}
 
+		// Generate new spring
 		for i := (h - 2); i >= 0; i-- {
 			for j := 0; j < w; j++ {
 				if board[i][j] != spring {
@@ -192,7 +187,6 @@ func simulate(board [][]int) {
 
 				canFill := true
 				for k := veryLeft; k <= veryRight; k++ {
-					// fmt.Println(w, h, i+1, k+1, veryLeft, veryRight)
 					if k == veryLeft && board[i+1][k+1] == wall {
 						continue
 					}
@@ -216,22 +210,32 @@ func simulate(board [][]int) {
 }
 
 func firstChallenge(xList, yList [][3]int) {
-	board := genBoard(xList, yList)
+	board, minY := genBoard(xList, yList)
 	simulate(board)
 	h, w, sum := len(board), len(board[0]), 0
-	for i := 1; i < h; i++ {
+	for i := minY; i < h; i++ {
 		for j := 0; j < w; j++ {
 			if board[i][j] == spring || board[i][j] == solid {
 				sum++
 			}
 		}
 	}
-	drawBoard(board)
+	// drawBoard(board)
 	fmt.Println(sum)
 }
 
-func secondChallenge() {
-
+func secondChallenge(xList, yList [][3]int) {
+	board, _ := genBoard(xList, yList)
+	simulate(board)
+	h, w, sum := len(board), len(board[0]), 0
+	for i := 1; i < h; i++ {
+		for j := 0; j < w; j++ {
+			if board[i][j] == solid {
+				sum++
+			}
+		}
+	}
+	fmt.Println(sum)
 }
 
 func main() {
@@ -240,5 +244,5 @@ func main() {
 	firstChallenge(l1, l2)
 	fmt.Println("****************")
 	fmt.Println("second challenge:")
-	secondChallenge()
+	secondChallenge(l1, l2)
 }
