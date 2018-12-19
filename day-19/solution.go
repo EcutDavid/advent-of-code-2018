@@ -168,7 +168,6 @@ func parseInput() (int, []op) {
 func firstChallenge(IP int, ops []op) {
 	state, opLen := [6]int64{}, int64(len(ops))
 	for state[IP] < opLen {
-		// fmt.Println(state)
 		op := ops[state[IP]]
 		state = funcMap[op.name](state, op.a, op.b, op.c)
 		(&state)[IP]++
@@ -177,8 +176,33 @@ func firstChallenge(IP int, ops []op) {
 }
 
 func secondChallenge(IP int, ops []op) {
-	// WIP, brute force does not work.
+	// The Code can be translated to below with my test case.
 
+	// s := [6]int64{0, 3, 1, 0, 10551261, 1}
+	// for {
+	// 	if s[4] == s[5]*s[2] {
+	// 		(&s)[0] = s[0] + s[5]
+	// 	}
+	// 	(&s)[2]++
+	// 	if s[2] > s[4] {
+	// 		(&s)[5]++
+	// 		// fmt.Println(s[5])
+	// 		if s[5] > s[4] {
+	// 			fmt.Println(s[0])
+	// 			os.Exit(0)
+	// 		}
+	// 		(&s)[2] = 1
+	// 	}
+	// }
+
+	// Code above can be translated to below.
+	sum := 0
+	for i := 1; i <= 10551261; i++ {
+		if 10551261%i == 0 {
+			sum += i
+		}
+	}
+	fmt.Println(sum)
 }
 
 func main() {

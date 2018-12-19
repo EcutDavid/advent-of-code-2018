@@ -11,3 +11,4 @@ My solutions for [adventofcode.com/2018](https://adventofcode.com/2018)
 * Day 15: A fun breadth-first graph search question, very easy to miss conditions and edge cases, a super nice graph question!
 * Day 16: Need carefully simulate the 16 ASM operations, can use hashmaps to generate the relationship between id(the first number) and operation, due to the input is small, didn't try to make the algorithm run faster.
 * Day 18: For the problem 2, instead of brute force to simulate the 1e9 "rounds", should take "snapshot" of each board, once there are two snapshot exactly the same, the problem can be solved.
+* Day 19: This is a day-16 follow up question, problem 1 can be solved with the solution from day-16, problem 2 is very tricky, had decoded the program into a high-level code, and found out, what's the code is really doing, and then, solved it.
