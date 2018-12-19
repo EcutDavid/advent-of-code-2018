@@ -178,6 +178,7 @@ func firstChallenge(IP int, ops []op) {
 func secondChallenge(IP int, ops []op) {
 	// The Code can be translated to below with my test case.
 
+	// The state that programming started loop, which is a O(10^14) loop.
 	// s := [6]int64{0, 3, 1, 0, 10551261, 1}
 	// for {
 	// 	if s[4] == s[5]*s[2] {
