@@ -106,18 +106,23 @@ func firstChallenge(str string) {
 	sortedItems := []string{}
 	sortedItems = walkTree(root, sortedItems)
 	fmt.Println(sortedItems, len(sortedItems))
-	// adjList := map[[2]int]map[[2]int]bool{}
-	px, py := 0, 0
+	adjList := map[[2]int]map[[2]int]bool{}
+	possiblePositions := map[[2]int]bool{[2]int{0, 0}: true}
 	for _, d := range sortedItems {
-		choices := strings.Split(d, "|")
-		for _, c := range choices {
-
-			for i := 0; i < len(c); i++ {
-				dx, dy := parseMove(c[i])
+		choices, newPositions := strings.Split(d, "|"), map[[2]int]bool{}
+		for p := range possiblePositions {
+			x, y := p[0], p[1]
+			for _, c := range choices {
+				for i := 0; i < len(c); i++ {
+					dx, dy := parseMove(c[i])
+					adjList[[2]int{x, y}][[2]int{dx, dy}], x, y = true, x+dx, y+dy
+				}
 			}
-
+			newPositions[[2]int{x, y}] = true
 		}
+		possiblePositions = newPositions
 	}
+	fmt.Println(adjList)
 }
 
 func secondChallenge() {
