@@ -110,19 +110,46 @@ func firstChallenge(str string) {
 	possiblePositions := map[[2]int]bool{[2]int{0, 0}: true}
 	for _, d := range sortedItems {
 		choices, newPositions := strings.Split(d, "|"), map[[2]int]bool{}
+		fmt.Println(possiblePositions, "?")
 		for p := range possiblePositions {
-			x, y := p[0], p[1]
 			for _, c := range choices {
+				x, y := p[0], p[1]
+
 				for i := 0; i < len(c); i++ {
 					dx, dy := parseMove(c[i])
+					if adjList[[2]int{x, y}] == nil {
+						adjList[[2]int{x, y}] = map[[2]int]bool{}
+					}
 					adjList[[2]int{x, y}][[2]int{dx, dy}], x, y = true, x+dx, y+dy
+					if adjList[[2]int{x, y}] == nil {
+						adjList[[2]int{x, y}] = map[[2]int]bool{}
+					}
+					adjList[[2]int{x, y}][[2]int{-dx, -dy}] = true
 				}
+
+				newPositions[[2]int{x, y}] = true
 			}
-			newPositions[[2]int{x, y}] = true
 		}
 		possiblePositions = newPositions
 	}
-	fmt.Println(adjList)
+
+	visited, distance := map[[2]int]bool{[2]int{0, 0}: true}, map[[2]int]int{[2]int{0, 0}: 0}
+	queue, maxDistance := [][2]int{[2]int{0, 0}}, 0
+	for len(queue) > 0 {
+		task := queue[0]
+		queue = queue[1:]
+		if maxDistance < distance[task] {
+			maxDistance = distance[task]
+		}
+		for p := range adjList[task] {
+			room := [2]int{task[0] + p[0], task[1] + p[1]}
+			if visited[room] {
+				continue
+			}
+			queue, distance[room], visited[room] = append(queue, room), distance[task]+1, true
+		}
+	}
+	fmt.Println(maxDistance)
 }
 
 func secondChallenge() {
