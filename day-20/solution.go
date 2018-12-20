@@ -1,10 +1,8 @@
-// Still WIP, but thought the problem can be solved if correctly generate the adj list.
+// More comments to be done, a good one!
 package main
 
 import (
 	"fmt"
-	"math"
-	"strings"
 )
 
 var (
@@ -14,54 +12,43 @@ var (
 	sASC          = "S"[0]
 	wASC          = "W"[0]
 	eASC          = "E"[0]
+	divASC        = "|"[0]
 )
 
-type node struct {
-	// When non-empty, is the leaf.
-	content  string
-	children []*node
+func findBraceCloseIndex(src string, index int) int {
+	braceCounter := 0
+	for i := index + 1; i < len(src); i++ {
+		if src[i] == braceOpenASC {
+			braceCounter++
+		}
+		if src[i] == braceCloseASC {
+			if braceCounter == 0 {
+				return i
+			}
+			braceCounter--
+		}
+	}
+	return -1
 }
 
-func genBlocks(src string) []string {
+func genChoices(src string) []string {
 	res := []string{}
 	braceCounter, last := 0, 0
 	for i := 0; i < len(src); i++ {
 		if src[i] == braceOpenASC {
-			if braceCounter == 0 {
-				res, last = append(res, src[last:i]), i+1
-			}
 			braceCounter++
 		}
 		if src[i] == braceCloseASC {
-			if braceCounter == 1 {
-				res, last = append(res, src[last:i]), i+1
-			}
 			braceCounter--
 		}
-		if i == (len(src)-1) && last == 0 {
-			res = append(res, src)
+		if src[i] == divASC && braceCounter == 0 {
+			res, last = append(res, src[last:i]), i+1
+		}
+		if i == (len(src) - 1) {
+			res = append(res, src[last:])
 		}
 	}
 	return res
-}
-
-func genTree(src string, root *node) {
-	if len(src) == 0 {
-		return
-	}
-	blocks := genBlocks(src)
-	if len(blocks) == 1 {
-		child := &node{src, []*node{}}
-		root.children = append(root.children, child)
-
-		return
-	}
-
-	for _, b := range blocks {
-		child := &node{"", []*node{}}
-		root.children = append(root.children, child)
-		genTree(b, child)
-	}
 }
 
 func parseInput() string {
@@ -70,20 +57,49 @@ func parseInput() string {
 	return s[1 : len(s)-1]
 }
 
-func walkTree(root *node, items []string) []string {
-	if len(root.content) > 0 {
-		items = append(items, root.content)
-		return items
-	}
-	for _, c := range root.children {
-		items = walkTree(c, items)
-	}
-	return items
-}
+var adjList = map[[2]int]map[[2]int]bool{}
 
-func min(a, b int) int { return int(math.Min(float64(a), float64(b))) }
-func max(a, b int) int { return int(math.Max(float64(a), float64(b))) }
-func abs(a int) int    { return int(math.Abs(float64(a))) }
+func walk(src string, positions [][2]int) [][2]int {
+	if len(src) == 0 {
+		return positions
+	}
+	// Otherwise, walk choice gonna mutate positions, which is unexpected.
+	positionsCopy := make([][2]int, len(positions))
+	copy(positionsCopy, positions)
+	positions = positionsCopy
+	for i := 0; i < len(src); i++ {
+		if src[i] == braceOpenASC {
+			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(src, i)
+			cs := genChoices(src[i+1 : closeIndex])
+			for _, c := range cs {
+				newPositions := walk(c, positions)
+				for _, p := range newPositions {
+					newPositionsMap[p] = true
+				}
+			}
+			newPositions := [][2]int{}
+			for k := range newPositionsMap {
+				newPositions = append(newPositions, k)
+			}
+			walk(src[closeIndex+1:], newPositions)
+			return newPositions
+		}
+		dx, dy := parseMove(src[i])
+		for k, p := range positions {
+			x, y := p[0], p[1]
+			if adjList[[2]int{x, y}] == nil {
+				adjList[[2]int{x, y}] = map[[2]int]bool{}
+			}
+			adjList[[2]int{x, y}][[2]int{dx, dy}], x, y = true, x+dx, y+dy
+			if adjList[[2]int{x, y}] == nil {
+				adjList[[2]int{x, y}] = map[[2]int]bool{}
+			}
+			adjList[[2]int{x, y}][[2]int{-dx, -dy}] = true
+			positions[k] = [2]int{x, y}
+		}
+	}
+	return positions
+}
 
 func parseMove(move byte) (int, int) {
 	x, y := 0, 0
@@ -101,37 +117,8 @@ func parseMove(move byte) (int, int) {
 }
 
 func firstChallenge(str string) {
-	root := &node{"", []*node{}}
-	genTree(str, root)
-	sortedItems := []string{}
-	sortedItems = walkTree(root, sortedItems)
-	fmt.Println(sortedItems, len(sortedItems))
-	adjList := map[[2]int]map[[2]int]bool{}
-	possiblePositions := map[[2]int]bool{[2]int{0, 0}: true}
-	for _, d := range sortedItems {
-		choices, newPositions := strings.Split(d, "|"), map[[2]int]bool{}
-		fmt.Println(possiblePositions, "?")
-		for p := range possiblePositions {
-			for _, c := range choices {
-				x, y := p[0], p[1]
-
-				for i := 0; i < len(c); i++ {
-					dx, dy := parseMove(c[i])
-					if adjList[[2]int{x, y}] == nil {
-						adjList[[2]int{x, y}] = map[[2]int]bool{}
-					}
-					adjList[[2]int{x, y}][[2]int{dx, dy}], x, y = true, x+dx, y+dy
-					if adjList[[2]int{x, y}] == nil {
-						adjList[[2]int{x, y}] = map[[2]int]bool{}
-					}
-					adjList[[2]int{x, y}][[2]int{-dx, -dy}] = true
-				}
-
-				newPositions[[2]int{x, y}] = true
-			}
-		}
-		possiblePositions = newPositions
-	}
+	adjList = map[[2]int]map[[2]int]bool{}
+	walk(str, [][2]int{[2]int{0, 0}})
 
 	visited, distance := map[[2]int]bool{[2]int{0, 0}: true}, map[[2]int]int{[2]int{0, 0}: 0}
 	queue, maxDistance := [][2]int{[2]int{0, 0}}, 0
@@ -152,8 +139,27 @@ func firstChallenge(str string) {
 	fmt.Println(maxDistance)
 }
 
-func secondChallenge() {
+func secondChallenge(str string) {
+	adjList = map[[2]int]map[[2]int]bool{}
+	walk(str, [][2]int{[2]int{0, 0}})
 
+	visited, distance := map[[2]int]bool{[2]int{0, 0}: true}, map[[2]int]int{[2]int{0, 0}: 0}
+	queue, sum := [][2]int{[2]int{0, 0}}, 0
+	for len(queue) > 0 {
+		task := queue[0]
+		queue = queue[1:]
+		if distance[task] >= 1000 {
+			sum++
+		}
+		for p := range adjList[task] {
+			room := [2]int{task[0] + p[0], task[1] + p[1]}
+			if visited[room] {
+				continue
+			}
+			queue, distance[room], visited[room] = append(queue, room), distance[task]+1, true
+		}
+	}
+	fmt.Println(sum)
 }
 
 func main() {
@@ -162,5 +168,5 @@ func main() {
 	firstChallenge(str)
 	fmt.Println("****************")
 	fmt.Println("second challenge:")
-	secondChallenge()
+	secondChallenge(str)
 }
