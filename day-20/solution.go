@@ -1,4 +1,4 @@
-// Can use hash table to track how many steps it takes to be a room
+// Still WIP, but thought the problem can be solved if correctly generate the adj list.
 package main
 
 import (
