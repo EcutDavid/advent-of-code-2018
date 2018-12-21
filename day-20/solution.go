@@ -77,16 +77,14 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 	for i := 0; i < len(route); i++ {
 		if route[i] == braceOpenASC {
 			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
-			cs := genChoices(route[i+1 : closeIndex])
-			for _, c := range cs {
-				newPositions := walk(c, positions, adjList)
-				for _, p := range newPositions {
+			choices, newPositions := genChoices(route[i+1:closeIndex]), [][2]int{}
+			for _, c := range choices {
+				for _, p := range walk(c, positions, adjList) {
+					if !newPositionsMap[p] {
+						newPositions = append(newPositions, p)
+					}
 					newPositionsMap[p] = true
 				}
-			}
-			newPositions := [][2]int{}
-			for k := range newPositionsMap {
-				newPositions = append(newPositions, k)
 			}
 			positions, i = newPositions, closeIndex
 			continue
