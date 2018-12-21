@@ -57,9 +57,7 @@ func parseInput() string {
 	return s[1 : len(s)-1]
 }
 
-var adjList = map[[2]int]map[[2]int]bool{}
-
-func walk(src string, positions [][2]int) [][2]int {
+func walk(src string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) [][2]int {
 	if len(src) == 0 {
 		return positions
 	}
@@ -72,7 +70,7 @@ func walk(src string, positions [][2]int) [][2]int {
 			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(src, i)
 			cs := genChoices(src[i+1 : closeIndex])
 			for _, c := range cs {
-				newPositions := walk(c, positions)
+				newPositions := walk(c, positions, adjList)
 				for _, p := range newPositions {
 					newPositionsMap[p] = true
 				}
@@ -81,7 +79,7 @@ func walk(src string, positions [][2]int) [][2]int {
 			for k := range newPositionsMap {
 				newPositions = append(newPositions, k)
 			}
-			walk(src[closeIndex+1:], newPositions)
+			walk(src[closeIndex+1:], newPositions, adjList)
 			return newPositions
 		}
 		dx, dy := parseMove(src[i])
@@ -101,33 +99,28 @@ func walk(src string, positions [][2]int) [][2]int {
 	return positions
 }
 
+// TODO: move map
 func parseMove(move byte) (int, int) {
-	x, y := 0, 0
 	switch move {
 	case nASC:
-		y++
+		return 0, 1
 	case sASC:
-		y--
+		return 0, -1
 	case wASC:
-		x++
+		return 1, 0
 	case eASC:
-		x--
+		return -1, 0
 	}
-	return x, y
+	return -1, -1
 }
 
-func firstChallenge(str string) {
-	adjList = map[[2]int]map[[2]int]bool{}
-	walk(str, [][2]int{[2]int{0, 0}})
-
+func bfs(adjList map[[2]int]map[[2]int]bool, visit func(distance int)) {
 	visited, distance := map[[2]int]bool{[2]int{0, 0}: true}, map[[2]int]int{[2]int{0, 0}: 0}
-	queue, maxDistance := [][2]int{[2]int{0, 0}}, 0
+	queue := [][2]int{[2]int{0, 0}}
 	for len(queue) > 0 {
 		task := queue[0]
 		queue = queue[1:]
-		if maxDistance < distance[task] {
-			maxDistance = distance[task]
-		}
+		visit(distance[task])
 		for p := range adjList[task] {
 			room := [2]int{task[0] + p[0], task[1] + p[1]}
 			if visited[room] {
@@ -136,29 +129,33 @@ func firstChallenge(str string) {
 			queue, distance[room], visited[room] = append(queue, room), distance[task]+1, true
 		}
 	}
+}
+
+func firstChallenge(str string) {
+	adjList := map[[2]int]map[[2]int]bool{}
+	walk(str, [][2]int{[2]int{0, 0}}, adjList)
+
+	maxDistance := 0
+	visit := func(distance int) {
+		if distance > maxDistance {
+			maxDistance = distance
+		}
+	}
+	bfs(adjList, visit)
 	fmt.Println(maxDistance)
 }
 
 func secondChallenge(str string) {
-	adjList = map[[2]int]map[[2]int]bool{}
-	walk(str, [][2]int{[2]int{0, 0}})
+	adjList := map[[2]int]map[[2]int]bool{}
+	walk(str, [][2]int{[2]int{0, 0}}, adjList)
 
-	visited, distance := map[[2]int]bool{[2]int{0, 0}: true}, map[[2]int]int{[2]int{0, 0}: 0}
-	queue, sum := [][2]int{[2]int{0, 0}}, 0
-	for len(queue) > 0 {
-		task := queue[0]
-		queue = queue[1:]
-		if distance[task] >= 1000 {
+	sum := 0
+	visit := func(distance int) {
+		if distance >= 1000 {
 			sum++
 		}
-		for p := range adjList[task] {
-			room := [2]int{task[0] + p[0], task[1] + p[1]}
-			if visited[room] {
-				continue
-			}
-			queue, distance[room], visited[room] = append(queue, room), distance[task]+1, true
-		}
 	}
+	bfs(adjList, visit)
 	fmt.Println(sum)
 }
 
