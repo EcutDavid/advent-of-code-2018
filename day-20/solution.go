@@ -76,14 +76,14 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 
 	for i := 0; i < len(route); i++ {
 		if route[i] == braceOpenASC {
-			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
+			positionsSet, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
 			choices, newPositions := genChoices(route[i+1:closeIndex]), [][2]int{}
 			for _, c := range choices {
 				for _, p := range walk(c, positions, adjList) {
-					if !newPositionsMap[p] {
+					if !positionsSet[p] {
 						newPositions = append(newPositions, p)
 					}
-					newPositionsMap[p] = true
+					positionsSet[p] = true
 				}
 			}
 			positions, i = newPositions, closeIndex
@@ -91,16 +91,16 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 		}
 		dx, dy := moveToVector(route[i])
 		for k, p := range positions {
-			x, y := p[0], p[1]
-			if adjList[[2]int{x, y}] == nil {
-				adjList[[2]int{x, y}] = map[[2]int]bool{}
+			if adjList[p] == nil {
+				adjList[p] = map[[2]int]bool{}
 			}
-			adjList[[2]int{x, y}][[2]int{dx, dy}], x, y = true, x+dx, y+dy
-			if adjList[[2]int{x, y}] == nil {
-				adjList[[2]int{x, y}] = map[[2]int]bool{}
+			adjList[p][[2]int{dx, dy}] = true
+			newPos := [2]int{p[0] + dx, p[1] + dy}
+			if adjList[newPos] == nil {
+				adjList[newPos] = map[[2]int]bool{}
 			}
-			adjList[[2]int{x, y}][[2]int{-dx, -dy}] = true
-			positions[k] = [2]int{x, y}
+			adjList[newPos][[2]int{-dx, -dy}] = true
+			positions[k] = newPos
 		}
 	}
 	return positions
