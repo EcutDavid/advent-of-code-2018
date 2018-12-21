@@ -151,20 +151,6 @@ type op struct {
 	a, b, c int64
 }
 
-func parseInput() (int, []op) {
-	scanner := bufio.NewScanner(os.Stdin)
-	scanner.Scan()
-	IP := 0
-	fmt.Sscanf(scanner.Text(), "#ip %d", &IP)
-	ops := []op{}
-	for scanner.Scan() {
-		name, a, b, c := "", int64(0), int64(0), int64(0)
-		fmt.Sscanf(scanner.Text(), "%s %d %d %d", &name, &a, &b, &c)
-		ops = append(ops, op{name, a, b, c})
-	}
-	return IP, ops
-}
-
 func firstChallenge(IP int, ops []op) {
 	state, opLen := [6]int64{}, int64(len(ops))
 	for state[IP] < opLen {
@@ -189,14 +175,14 @@ func secondChallenge(IP int, ops []op) {
 				max = state[5]
 			}
 			if regFiveMap[state[5]] > 0 {
-				mostTime, theOne := int64(0), int64(0)
+				timeMax, bestChoice := int64(0), int64(0)
 				for k, v := range regFiveMap {
-					if v > mostTime {
-						mostTime = v
-						theOne = k
+					if v > timeMax {
+						timeMax = v
+						bestChoice = k
 					}
 				}
-				fmt.Println(theOne)
+				fmt.Println(bestChoice)
 				os.Exit(0)
 			}
 			regFiveMap[state[5]] = time
@@ -204,6 +190,20 @@ func secondChallenge(IP int, ops []op) {
 		state = funcMap[op.name](state, op.a, op.b, op.c)
 		(&state)[IP]++
 	}
+}
+
+func parseInput() (int, []op) {
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	IP := 0
+	fmt.Sscanf(scanner.Text(), "#ip %d", &IP)
+	ops := []op{}
+	for scanner.Scan() {
+		name, a, b, c := "", int64(0), int64(0), int64(0)
+		fmt.Sscanf(scanner.Text(), "%s %d %d %d", &name, &a, &b, &c)
+		ops = append(ops, op{name, a, b, c})
+	}
+	return IP, ops
 }
 
 func main() {

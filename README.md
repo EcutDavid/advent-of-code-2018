@@ -12,3 +12,5 @@ My solutions for [adventofcode.com/2018](https://adventofcode.com/2018)
 * Day 16: Need carefully simulate the 16 ASM operations, can use hashmaps to generate the relationship between id(the first number) and operation, due to the input is small, didn't try to make the algorithm run faster.
 * Day 18: For the problem 2, instead of brute force to simulate the 1e9 "rounds", should take "snapshot" of each board, once there is two snapshots which already appeared before, the problem can be solved.
 * Day 19: This is a day-16 follow up question, problem 1 can be solved with the solution from day-16, problem 2 is very tricky, had decoded the program into a high-level code(or just natural language), after that, we can understand what the program is doing, and optimize the program's time complexity.
+* Day 20: Parsing a graph from the input, then, dfs to walk through the map, the hard part of parsing the input, used a recursive solution to solve that part.
+* Day 21: This is a day-19 follow up question, need to parse the asm code then find the trick there, to solve the problem.

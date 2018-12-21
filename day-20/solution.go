@@ -1,4 +1,4 @@
-// More comments to be done, a good one!
+// Parsing a graph from the input, then, dfs to walk through the map.
 package main
 
 import (
@@ -69,17 +69,15 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 	if len(route) == 0 {
 		return positions
 	}
-	// Otherwise, walk choice gonna mutate positions, which is unexpected.
-	positionsCopy := make([][2]int, len(positions))
-	copy(positionsCopy, positions)
-	positions = positionsCopy
 
 	for i := 0; i < len(route); i++ {
 		if route[i] == braceOpenASC {
 			positionsSet, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
 			choices, newPositions := genChoices(route[i+1:closeIndex]), [][2]int{}
 			for _, c := range choices {
-				for _, p := range walk(c, positions, adjList) {
+				positionsCopy := make([][2]int, len(positions))
+				copy(positionsCopy, positions)
+				for _, p := range walk(c, positionsCopy, adjList) {
 					if !positionsSet[p] {
 						newPositions = append(newPositions, p)
 					}
@@ -89,6 +87,7 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 			positions, i = newPositions, closeIndex
 			continue
 		}
+
 		dx, dy := moveToVector(route[i])
 		for k, p := range positions {
 			if adjList[p] == nil {
