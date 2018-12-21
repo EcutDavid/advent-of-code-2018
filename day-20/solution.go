@@ -15,6 +15,20 @@ var (
 	divASC        = "|"[0]
 )
 
+func moveToVector(move byte) (int, int) {
+	switch move {
+	case nASC:
+		return 0, 1
+	case sASC:
+		return 0, -1
+	case wASC:
+		return 1, 0
+	case eASC:
+		return -1, 0
+	}
+	return -1, -1
+}
+
 func findBraceCloseIndex(src string, index int) int {
 	braceCounter := 0
 	for i := index + 1; i < len(src); i++ {
@@ -51,24 +65,19 @@ func genChoices(src string) []string {
 	return res
 }
 
-func parseInput() string {
-	s := ""
-	fmt.Scan(&s)
-	return s[1 : len(s)-1]
-}
-
-func walk(src string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) [][2]int {
-	if len(src) == 0 {
+func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) [][2]int {
+	if len(route) == 0 {
 		return positions
 	}
 	// Otherwise, walk choice gonna mutate positions, which is unexpected.
 	positionsCopy := make([][2]int, len(positions))
 	copy(positionsCopy, positions)
 	positions = positionsCopy
-	for i := 0; i < len(src); i++ {
-		if src[i] == braceOpenASC {
-			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(src, i)
-			cs := genChoices(src[i+1 : closeIndex])
+
+	for i := 0; i < len(route); i++ {
+		if route[i] == braceOpenASC {
+			newPositionsMap, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
+			cs := genChoices(route[i+1 : closeIndex])
 			for _, c := range cs {
 				newPositions := walk(c, positions, adjList)
 				for _, p := range newPositions {
@@ -79,10 +88,10 @@ func walk(src string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) []
 			for k := range newPositionsMap {
 				newPositions = append(newPositions, k)
 			}
-			walk(src[closeIndex+1:], newPositions, adjList)
-			return newPositions
+			positions, i = newPositions, closeIndex
+			continue
 		}
-		dx, dy := parseMove(src[i])
+		dx, dy := moveToVector(route[i])
 		for k, p := range positions {
 			x, y := p[0], p[1]
 			if adjList[[2]int{x, y}] == nil {
@@ -97,21 +106,6 @@ func walk(src string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) []
 		}
 	}
 	return positions
-}
-
-// TODO: move map
-func parseMove(move byte) (int, int) {
-	switch move {
-	case nASC:
-		return 0, 1
-	case sASC:
-		return 0, -1
-	case wASC:
-		return 1, 0
-	case eASC:
-		return -1, 0
-	}
-	return -1, -1
 }
 
 func bfs(adjList map[[2]int]map[[2]int]bool, visit func(distance int)) {
@@ -157,6 +151,12 @@ func secondChallenge(str string) {
 	}
 	bfs(adjList, visit)
 	fmt.Println(sum)
+}
+
+func parseInput() string {
+	s := ""
+	fmt.Scan(&s)
+	return s[1 : len(s)-1]
 }
 
 func main() {
