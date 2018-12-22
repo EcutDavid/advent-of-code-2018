@@ -15,6 +15,18 @@ const (
 	switchGearTime = 7
 )
 
+var dirs = [4][2]int{
+	[2]int{0, 1},
+	[2]int{0, -1},
+	[2]int{1, 0},
+	[2]int{-1, 0},
+}
+var allowedGearsMap = map[int][]int{
+	0: []int{torch, climbGear},
+	1: []int{climbGear, none},
+	2: []int{torch, none},
+}
+
 func genMap(d, w, h int) [][]int {
 	extend := getExtend(w, h)
 	e := make([][]int, h+extend)
@@ -46,29 +58,6 @@ func genMap(d, w, h int) [][]int {
 	return e
 }
 
-func firstChallenge(d, w, h int) {
-	e := genMap(d, w, h)
-	sum := 0
-	for i := 0; i < h; i++ {
-		for j := 0; j < w; j++ {
-			sum += e[i][j]
-		}
-	}
-	fmt.Println(sum)
-}
-
-var dirs = [4][2]int{
-	[2]int{0, 1},
-	[2]int{0, -1},
-	[2]int{1, 0},
-	[2]int{-1, 0},
-}
-var allowedGearsMap = map[int][]int{
-	0: []int{torch, climbGear},
-	1: []int{climbGear, none},
-	2: []int{torch, none},
-}
-
 func getAnotherGear(gears []int, gear int) int {
 	for _, r := range gears {
 		if r != gear {
@@ -89,8 +78,19 @@ func getExtend(w, h int) int {
 	return (w + h) / 2
 }
 
+func firstChallenge(d, w, h int) {
+	m := genMap(d, w, h)
+	sum := 0
+	for i := 0; i < h; i++ {
+		for j := 0; j < w; j++ {
+			sum += m[i][j]
+		}
+	}
+	fmt.Println(sum)
+}
+
 func secondChallenge(d, w, h int) {
-	e := genMap(d, w, h)
+	m := genMap(d, w, h)
 	mapW, mapH := w+getExtend(w, h), h+getExtend(w, h)
 	distance := map[[2]int][]int{}
 	for i := 0; i < mapH; i++ {
@@ -99,10 +99,10 @@ func secondChallenge(d, w, h int) {
 		}
 	}
 	distance[[2]int{0, 0}] =
-		[]int{torch: 0, climbGear: switchGearTime, none: math.MaxInt32} // The starting & ending point are rocky.
+		[]int{torch: 0, climbGear: switchGearTime, none: math.MaxInt32} // The starting point is rocky.
 
 	last := distance[[2]int{h - 1, w - 1}][0]
-	for n := 0; n < 1000; n++ {
+	for n := 0; n < w+h; n++ {
 		if n > 0 && n%5 == 0 {
 			new := distance[[2]int{h - 1, w - 1}][0]
 			if last == new {
@@ -113,8 +113,8 @@ func secondChallenge(d, w, h int) {
 		}
 		for i := 0; i < mapH; i++ {
 			for j := 0; j < mapW; j++ {
-				for _, r := range allowedGearsMap[e[i][j]] {
-					another := getAnotherGear(allowedGearsMap[e[i][j]], r)
+				for _, r := range allowedGearsMap[m[i][j]] {
+					another := getAnotherGear(allowedGearsMap[m[i][j]], r)
 					newDistance := distance[[2]int{i, j}][r] + switchGearTime
 					if newDistance < distance[[2]int{i, j}][another] {
 						distance[[2]int{i, j}][another] = newDistance
@@ -125,8 +125,8 @@ func secondChallenge(d, w, h int) {
 					if (x < 0) || (x == mapW) || (y < 0) || (y == mapH) {
 						continue
 					}
-					for _, r := range allowedGearsMap[e[y][x]] {
-						another := getAnotherGear(allowedGearsMap[e[i][j]], r)
+					for _, r := range allowedGearsMap[m[y][x]] {
+						another := getAnotherGear(allowedGearsMap[m[i][j]], r)
 						newDistance := min(distance[[2]int{i, j}][r]+1, distance[[2]int{i, j}][another]+switchGearTime+1)
 						if newDistance < distance[[2]int{y, x}][r] {
 							distance[[2]int{y, x}][r] = newDistance
