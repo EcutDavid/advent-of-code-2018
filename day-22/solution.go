@@ -103,6 +103,7 @@ func secondChallenge(d, w, h int) {
 
 	last := distance[[2]int{h - 1, w - 1}][0]
 	for n := 0; n < w+h; n++ {
+		// Exit ealier so don't have to run exactly w+h round
 		if n > 0 && n%5 == 0 {
 			new := distance[[2]int{h - 1, w - 1}][0]
 			if last == new {
