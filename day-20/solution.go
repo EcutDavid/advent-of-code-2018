@@ -14,19 +14,11 @@ var (
 	eASC          = "E"[0]
 	divASC        = "|"[0]
 )
-
-func moveToVector(move byte) (int, int) {
-	switch move {
-	case nASC:
-		return 0, 1
-	case sASC:
-		return 0, -1
-	case wASC:
-		return 1, 0
-	case eASC:
-		return -1, 0
-	}
-	return -1, -1
+var vectorMap = map[byte][2]int{
+	nASC: [2]int{0, 1},
+	sASC: [2]int{0, -1},
+	wASC: [2]int{-1, 0},
+	eASC: [2]int{1, 0},
 }
 
 func findBraceCloseIndex(src string, index int) int {
@@ -65,6 +57,13 @@ func genChoices(src string) []string {
 	return res
 }
 
+func setAdjList(adjList map[[2]int]map[[2]int]bool, pos, vector [2]int) {
+	if adjList[pos] == nil {
+		adjList[pos] = map[[2]int]bool{}
+	}
+	adjList[pos][vector] = true
+}
+
 func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) [][2]int {
 	if len(route) == 0 {
 		return positions
@@ -88,17 +87,11 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 			continue
 		}
 
-		dx, dy := moveToVector(route[i])
+		v := vectorMap[route[i]]
 		for k, p := range positions {
-			if adjList[p] == nil {
-				adjList[p] = map[[2]int]bool{}
-			}
-			adjList[p][[2]int{dx, dy}] = true
-			newPos := [2]int{p[0] + dx, p[1] + dy}
-			if adjList[newPos] == nil {
-				adjList[newPos] = map[[2]int]bool{}
-			}
-			adjList[newPos][[2]int{-dx, -dy}] = true
+			setAdjList(adjList, p, v)
+			newPos := [2]int{p[0] + v[0], p[1] + v[1]}
+			setAdjList(adjList, newPos, [2]int{-v[0], -v[1]})
 			positions[k] = newPos
 		}
 	}
