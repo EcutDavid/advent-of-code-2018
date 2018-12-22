@@ -2,16 +2,16 @@ package main
 
 import "fmt"
 
-func parseInput() int {
-	return -1
-}
-
 func firstChallenge() {
 
 }
 
 func secondChallenge() {
 
+}
+
+func parseInput() int {
+	return -1
 }
 
 func main() {

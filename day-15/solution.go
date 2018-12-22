@@ -74,30 +74,6 @@ func reportHP(units unitList) {
 	}
 }
 
-func parseInput() (board, unitList) {
-	scanner := bufio.NewScanner(os.Stdin)
-	board, y, unites := [][]int{}, 0, unitList{}
-
-	for scanner.Scan() {
-		text := scanner.Text()
-		line := make([]int, len(text))
-		for i := 0; i < len(text); i++ {
-			if text[i] == wallASC {
-				line[i] = wall
-				continue
-			}
-			line[i] = empty
-			if text[i] == elfASC {
-				unites = append(unites, unit{false, [2]int{y, i}, defaultHP, true})
-			} else if text[i] == goblinASC {
-				unites = append(unites, unit{false, [2]int{y, i}, defaultHP, false})
-			}
-		}
-		board, y = append(board, line), y+1
-	}
-	return board, unites
-}
-
 func genUnitMap(units unitList) map[[2]int]*unit {
 	res := map[[2]int]*unit{}
 	for i := 0; i < len(units); i++ {
@@ -310,6 +286,30 @@ func secondChallenge(board board, units unitList) {
 			os.Exit(0)
 		}
 	}
+}
+
+func parseInput() (board, unitList) {
+	scanner := bufio.NewScanner(os.Stdin)
+	board, y, unites := [][]int{}, 0, unitList{}
+
+	for scanner.Scan() {
+		text := scanner.Text()
+		line := make([]int, len(text))
+		for i := 0; i < len(text); i++ {
+			if text[i] == wallASC {
+				line[i] = wall
+				continue
+			}
+			line[i] = empty
+			if text[i] == elfASC {
+				unites = append(unites, unit{false, [2]int{y, i}, defaultHP, true})
+			} else if text[i] == goblinASC {
+				unites = append(unites, unit{false, [2]int{y, i}, defaultHP, false})
+			}
+		}
+		board, y = append(board, line), y+1
+	}
+	return board, unites
 }
 
 func main() {

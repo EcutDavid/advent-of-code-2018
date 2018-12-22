@@ -45,22 +45,6 @@ func max(a, b int) int {
 	return a
 }
 
-func parseInput() ([][3]int, [][3]int) {
-	xList, yList := [][3]int{}, [][3]int{}
-	scanner := bufio.NewScanner(os.Stdin)
-	for scanner.Scan() {
-		line := scanner.Text()
-		a, b, c, d, e := "", "", 0, 0, 0
-		fmt.Sscanf(line, "%1s=%d, %1s=%d..%d", &a, &c, &b, &d, &e)
-		if a == "x" {
-			xList = append(xList, [3]int{c, d, e})
-		} else {
-			yList = append(yList, [3]int{c, d, e})
-		}
-	}
-	return xList, yList
-}
-
 func genBoard(xList, yList [][3]int) ([][]int, int) {
 	maxX, minX, maxY, minY := 500, 500, 1, 500
 	for _, v := range xList {
@@ -227,6 +211,22 @@ func secondChallenge(xList, yList [][3]int) {
 		}
 	}
 	fmt.Println(sum)
+}
+
+func parseInput() ([][3]int, [][3]int) {
+	xList, yList := [][3]int{}, [][3]int{}
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		line := scanner.Text()
+		a, b, c, d, e := "", "", 0, 0, 0
+		fmt.Sscanf(line, "%1s=%d, %1s=%d..%d", &a, &c, &b, &d, &e)
+		if a == "x" {
+			xList = append(xList, [3]int{c, d, e})
+		} else {
+			yList = append(yList, [3]int{c, d, e})
+		}
+	}
+	return xList, yList
 }
 
 func main() {

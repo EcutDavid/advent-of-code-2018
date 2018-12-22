@@ -1,4 +1,4 @@
-// Parsing a graph from the input, then, dfs to walk through the map.
+// Parsing a graph from the input, then, DFS to walk through the map.
 package main
 
 import (
@@ -74,6 +74,7 @@ func walk(route string, positions [][2]int, adjList map[[2]int]map[[2]int]bool) 
 			positionsSet, closeIndex := map[[2]int]bool{}, findBraceCloseIndex(route, i)
 			choices, newPositions := genChoices(route[i+1:closeIndex]), [][2]int{}
 			for _, c := range choices {
+				// Copies the positions so that positions will remain unchanged after walking a choice.
 				positionsCopy := make([][2]int, len(positions))
 				copy(positionsCopy, positions)
 				for _, p := range walk(c, positionsCopy, adjList) {

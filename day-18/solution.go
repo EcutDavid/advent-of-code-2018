@@ -18,27 +18,6 @@ var (
 	tASC = "|"[0]
 )
 
-func parseInput() [][]int {
-	scanner := bufio.NewScanner(os.Stdin)
-	board := [][]int{}
-	for scanner.Scan() {
-		line := scanner.Text()
-		row := make([]int, len(line))
-		for i := 0; i < len(line); i++ {
-			switch line[i] {
-			case gASC:
-				row[i] = open
-			case lASC:
-				row[i] = lumberyard
-			case tASC:
-				row[i] = trees
-			}
-		}
-		board = append(board, row)
-	}
-	return board
-}
-
 var dirs = [8][2]int{
 	[2]int{0, 1},
 	[2]int{0, -1},
@@ -147,6 +126,27 @@ func secondChallenge(board [][]int) {
 		}
 	}
 	fmt.Println(lCounter, tCounter, lCounter*tCounter)
+}
+
+func parseInput() [][]int {
+	scanner := bufio.NewScanner(os.Stdin)
+	board := [][]int{}
+	for scanner.Scan() {
+		line := scanner.Text()
+		row := make([]int, len(line))
+		for i := 0; i < len(line); i++ {
+			switch line[i] {
+			case gASC:
+				row[i] = open
+			case lASC:
+				row[i] = lumberyard
+			case tASC:
+				row[i] = trees
+			}
+		}
+		board = append(board, row)
+	}
+	return board
 }
 
 func main() {
