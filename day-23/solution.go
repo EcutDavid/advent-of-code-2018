@@ -1,3 +1,5 @@
+// Still work in progress, current solution has a hole in logic which I still didn't find out where
+// Sorry for bad code, will clean up after finish the solution(if).
 package main
 
 import (
@@ -8,27 +10,26 @@ import (
 )
 
 type robot struct {
-	x, y, z int
-	r       int
+	x, y, z int64
+	r       int64
 }
 
-// Just for calc the distance between a bot & origin point.
 var origin = robot{0, 0, 0, 0}
 
-func abs(a int) int {
+func abs(a int64) int64 {
 	if a < 0 {
 		return -a
 	}
 	return a
 }
 
-func getDistance(a, b robot) int {
+func getBotDistance(a, b robot) int64 {
 	dx, dy, dz := a.x-b.x, a.y-b.y, a.z-b.z
 	return abs(dx) + abs(dy) + abs(dz)
 }
 
 func firstChallenge(bots []robot) {
-	bestR, best := -1, 0
+	bestR, best := -1, int64(0)
 	for i := 0; i < len(bots); i++ {
 		if bots[i].r > best {
 			best, bestR = bots[i].r, i
@@ -36,33 +37,61 @@ func firstChallenge(bots []robot) {
 	}
 	sum := 0
 	for i := 0; i < len(bots); i++ {
-		if getDistance(bots[i], bots[bestR]) <= bots[bestR].r {
+		if getBotDistance(bots[i], bots[bestR]) <= bots[bestR].r {
 			sum++
 		}
 	}
 	fmt.Println(sum)
 }
-func min(a, b int) int {
+func min(a, b int64) int64 {
 	if a > b {
 		return b
 	}
 	return a
 }
-func max(a, b int) int {
+func max(a, b int64) int64 {
 	if a < b {
 		return b
 	}
 	return a
 }
 
-func secondChallenge(bots []robot) {
-	mMin, mMax := math.MaxInt32, 0
-	for _, b := range bots {
-		dToOrigin := getDistance(b, origin)
-		mMin = max(0, min(dToOrigin-b.r, mMin))
-		mMax = max(dToOrigin+b.r, mMax)
+func genVertices(bot robot) [7][3]int64 {
+	return [7][3]int64{
+		[3]int64{bot.x + bot.r, bot.y, bot.z},
+		[3]int64{bot.x - bot.r, bot.y, bot.z},
+		[3]int64{bot.x, bot.y + bot.r, bot.z},
+		[3]int64{bot.x, bot.y - bot.r, bot.z},
+		[3]int64{bot.x, bot.y, bot.z + bot.r},
+		[3]int64{bot.x, bot.y, bot.z - bot.r},
+		[3]int64{bot.x, bot.y, bot.z},
 	}
-	fmt.Println(mMin, mMax, mMax-mMin)
+}
+func getDistance(r robot, pos [3]int64) int64 {
+	dx, dy, dz := r.x-pos[0], r.y-pos[1], r.z-pos[2]
+	return abs(dx) + abs(dy) + abs(dz)
+}
+
+func secondChallenge(bots []robot) {
+	bestSum, bestDistance := 0, int64(math.MaxInt64)
+	for _, b := range bots {
+		for _, v := range genVertices(b) {
+			sum, distanceToV := 0, getDistance(origin, v)
+			for _, d := range bots {
+				if getDistance(d, v) <= d.r {
+					sum++
+				}
+			}
+			if sum > bestSum {
+				fmt.Println(v)
+				bestDistance, bestSum = distanceToV, sum
+			} else if (sum == bestSum) && (bestDistance > distanceToV) {
+				bestDistance = distanceToV
+				fmt.Println(v)
+			}
+		}
+	}
+	fmt.Println(bestSum, bestDistance)
 }
 
 // func secondChallenge(bots []robot) {
@@ -120,7 +149,7 @@ func parseInput() []robot {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
-		x, y, z, r := 0, 0, 0, 0
+		var x, y, z, r int64
 		fmt.Sscanf(line, "pos=<%d,%d,%d>, r=%d", &x, &y, &z, &r)
 		bots = append(bots, robot{x, y, z, r})
 	}
