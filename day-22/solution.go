@@ -7,15 +7,14 @@ import (
 )
 
 const (
-	M              = 20183
-	torch          = 0
-	climbGear      = 1
-	none           = 2
-	switchGearTime = 7
+	M         = 20183
+	torch     = 0
+	climbGear = 1
+	none      = 2
 )
 
 type edge struct {
-	from, to [2]int
+	from, to [3]int // [x, y, state]
 	cost     int
 }
 
@@ -57,15 +56,6 @@ func genMap(d, w, h int) ([][]int, int, int) {
 	return e, h + extend, w + extend
 }
 
-func getAnotherGear(gears []int, gear int) int {
-	for _, r := range gears {
-		if r != gear {
-			return r
-		}
-	}
-	return -1
-}
-
 func getExtend(w, h int) int {
 	return (w + h) / 2
 }
@@ -91,37 +81,31 @@ func secondChallenge(d, w, h int) {
 	}
 	distance[[2]int{0, 0}][torch] = 0 // The starting point is rocky.
 
-	visit := func(i, j int) bool {
-		changed := false
-		for _, r := range allowedGearsMap[m[i][j]] {
-			another := getAnotherGear(allowedGearsMap[m[i][j]], r)
-			newDistance := distance[[2]int{i, j}][r] + switchGearTime
-			if newDistance < distance[[2]int{i, j}][another] {
-				distance[[2]int{i, j}][another], changed = newDistance, true
-			}
-		}
-		for _, dir := range dirs {
-			x, y := j+dir[1], i+dir[0]
-			if (x < 0) || (x == mapW) || (y < 0) || (y == mapH) {
-				continue
-			}
-			for _, r := range allowedGearsMap[m[y][x]] {
-				newDistance := distance[[2]int{i, j}][r] + 1
-				if newDistance < distance[[2]int{y, x}][r] {
-					distance[[2]int{y, x}][r], changed = newDistance, true
+	edges := []edge{}
+	for i := 0; i < mapH; i++ {
+		for j := 0; j < mapW; j++ {
+			gearA, gearB := allowedGearsMap[m[i][j]][0], allowedGearsMap[m[i][j]][1]
+			edges = append(edges, edge{[3]int{i, j, gearA}, [3]int{i, j, gearB}, 7})
+			edges = append(edges, edge{[3]int{i, j, gearB}, [3]int{i, j, gearA}, 7})
+			for _, dir := range dirs {
+				x, y := j+dir[1], i+dir[0]
+				if (x < 0) || (x == mapW) || (y < 0) || (y == mapH) {
+					continue
+				}
+				for _, g := range allowedGearsMap[m[y][x]] {
+					edges = append(edges, edge{[3]int{i, j, g}, [3]int{y, x, g}, 1})
 				}
 			}
 		}
-		return changed
 	}
 
 	for n := 0; n < w+h; n++ {
 		done := true
-		for i := 0; i < mapH; i++ {
-			for j := 0; j < mapW; j++ {
-				if visit(i, j) {
-					done = false
-				}
+		for _, e := range edges {
+			newDistance := distance[[2]int{e.from[0], e.from[1]}][e.from[2]] + e.cost
+			if newDistance < distance[[2]int{e.to[0], e.to[1]}][e.to[2]] {
+				distance[[2]int{e.to[0], e.to[1]}][e.to[2]] = newDistance
+				done = false
 			}
 		}
 		if done {
