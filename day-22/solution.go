@@ -7,10 +7,11 @@ import (
 )
 
 const (
-	M         = 20183
-	torch     = 0
-	climbGear = 1
-	none      = 2
+	M           = 20183
+	cannotReach = math.MaxInt32
+	torch       = 0
+	climbGear   = 1
+	none        = 2
 )
 
 type edge struct {
@@ -73,7 +74,7 @@ func firstChallenge(d, w, h int) {
 
 func secondChallenge(d, w, h int) {
 	m, mapH, mapW := genMap(d, w, h)
-	distance, cannotReach := map[[2]int][]int{}, math.MaxInt32
+	distance := map[[2]int][]int{}
 	for i := 0; i < mapH; i++ {
 		for j := 0; j < mapW; j++ {
 			distance[[2]int{i, j}] = []int{torch: cannotReach, climbGear: cannotReach, none: cannotReach}
