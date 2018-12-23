@@ -56,15 +56,14 @@ func max(a, b int64) int64 {
 	return a
 }
 
-func genVertices(bot robot) [7][3]int64 {
-	return [7][3]int64{
+func genVertices(bot robot) [6][3]int64 {
+	return [6][3]int64{
 		[3]int64{bot.x + bot.r, bot.y, bot.z},
 		[3]int64{bot.x - bot.r, bot.y, bot.z},
 		[3]int64{bot.x, bot.y + bot.r, bot.z},
 		[3]int64{bot.x, bot.y - bot.r, bot.z},
 		[3]int64{bot.x, bot.y, bot.z + bot.r},
 		[3]int64{bot.x, bot.y, bot.z - bot.r},
-		[3]int64{bot.x, bot.y, bot.z},
 	}
 }
 func getDistance(r robot, pos [3]int64) int64 {
@@ -72,26 +71,44 @@ func getDistance(r robot, pos [3]int64) int64 {
 	return abs(dx) + abs(dy) + abs(dz)
 }
 
+// func genBotRange(bot robot) [3][2]int64 {
+// 	return [3][2]int64{
+// 		[2]int64{bot.x - bot.r, bot.x + bot.r},
+// 		[2]int64{bot.y - bot.r, bot.y + bot.r},
+// 		[2]int64{bot.z - bot.r, bot.y + bot.r},
+// 	}
+// }
+// func genMergedRange(a, b [3][2]int64) [3][2]int64 {
+// 	return [3][2]int64{
+// 		[2]int64{max(a[0][0], b[0][0]), min(a[0][1], b[0][1])},
+// 		[2]int64{max(a[1][0], b[1][0]), min(a[1][1], b[1][1])},
+// 		[2]int64{max(a[2][0], b[2][0]), min(a[2][1], b[2][1])},
+// 	}
+// }
+
 func secondChallenge(bots []robot) {
-	bestSum, bestDistance := 0, int64(math.MaxInt64)
+	bestSum, bestDistance, targetBots, bestVertex := 0, int64(math.MaxInt64), []int{}, [3]int64{}
 	for _, b := range bots {
 		for _, v := range genVertices(b) {
-			sum, distanceToV := 0, getDistance(origin, v)
-			for _, d := range bots {
+			sum, distanceToV, potentialBots := 0, getDistance(origin, v), []int{}
+			for k, d := range bots {
 				if getDistance(d, v) <= d.r {
 					sum++
+					potentialBots = append(potentialBots, k)
 				}
 			}
 			if sum > bestSum {
 				fmt.Println(v)
-				bestDistance, bestSum = distanceToV, sum
+				bestDistance, bestSum, targetBots, bestVertex = distanceToV, sum, potentialBots, v
+				fmt.Println(b)
 			} else if (sum == bestSum) && (bestDistance > distanceToV) {
 				bestDistance = distanceToV
-				fmt.Println(v)
+				fmt.Println("concern", v)
 			}
 		}
 	}
-	fmt.Println(bestSum, bestDistance)
+	fmt.Println(targetBots, bestVertex)
+	// The question is, can this best Vertext be moved somewhere eles?
 }
 
 // func secondChallenge(bots []robot) {
