@@ -14,19 +14,19 @@ const (
 	switchGearTime = 7
 )
 
-var dirs = [4][2]int{
-	[2]int{0, 1},
-	[2]int{0, -1},
-	[2]int{1, 0},
-	[2]int{-1, 0},
+type edge struct {
+	from, to [2]int
+	cost     int
 }
+
+var dirs = [4][2]int{[2]int{0, 1}, [2]int{0, -1}, [2]int{1, 0}, [2]int{-1, 0}}
 var allowedGearsMap = map[int][]int{
 	0: []int{torch, climbGear},
 	1: []int{climbGear, none},
 	2: []int{torch, none},
 }
 
-func genMap(d, w, h int) [][]int {
+func genMap(d, w, h int) ([][]int, int, int) {
 	extend := getExtend(w, h)
 	e := make([][]int, h+extend)
 	for i := 0; i < h+extend; i++ {
@@ -54,7 +54,7 @@ func genMap(d, w, h int) [][]int {
 			e[i][j] = e[i][j] % 3
 		}
 	}
-	return e
+	return e, h + extend, w + extend
 }
 
 func getAnotherGear(gears []int, gear int) int {
@@ -71,7 +71,7 @@ func getExtend(w, h int) int {
 }
 
 func firstChallenge(d, w, h int) {
-	m := genMap(d, w, h)
+	m, _, _ := genMap(d, w, h)
 	sum := 0
 	for i := 0; i < h; i++ {
 		for j := 0; j < w; j++ {
@@ -82,39 +82,45 @@ func firstChallenge(d, w, h int) {
 }
 
 func secondChallenge(d, w, h int) {
-	m := genMap(d, w, h)
-	mapW, mapH := w+getExtend(w, h), h+getExtend(w, h)
-	distance := map[[2]int][]int{}
+	m, mapH, mapW := genMap(d, w, h)
+	distance, cannotReach := map[[2]int][]int{}, math.MaxInt32
 	for i := 0; i < mapH; i++ {
 		for j := 0; j < mapW; j++ {
-			distance[[2]int{i, j}] = []int{torch: math.MaxInt32, climbGear: math.MaxInt32, none: math.MaxInt32}
+			distance[[2]int{i, j}] = []int{torch: cannotReach, climbGear: cannotReach, none: cannotReach}
 		}
 	}
-	distance[[2]int{0, 0}] =
-		[]int{torch: 0, climbGear: switchGearTime, none: math.MaxInt32} // The starting point is rocky.
+	distance[[2]int{0, 0}][torch] = 0 // The starting point is rocky.
+
+	visit := func(i, j int) bool {
+		changed := false
+		for _, r := range allowedGearsMap[m[i][j]] {
+			another := getAnotherGear(allowedGearsMap[m[i][j]], r)
+			newDistance := distance[[2]int{i, j}][r] + switchGearTime
+			if newDistance < distance[[2]int{i, j}][another] {
+				distance[[2]int{i, j}][another], changed = newDistance, true
+			}
+		}
+		for _, dir := range dirs {
+			x, y := j+dir[1], i+dir[0]
+			if (x < 0) || (x == mapW) || (y < 0) || (y == mapH) {
+				continue
+			}
+			for _, r := range allowedGearsMap[m[y][x]] {
+				newDistance := distance[[2]int{i, j}][r] + 1
+				if newDistance < distance[[2]int{y, x}][r] {
+					distance[[2]int{y, x}][r], changed = newDistance, true
+				}
+			}
+		}
+		return changed
+	}
 
 	for n := 0; n < w+h; n++ {
 		done := true
 		for i := 0; i < mapH; i++ {
 			for j := 0; j < mapW; j++ {
-				for _, r := range allowedGearsMap[m[i][j]] {
-					another := getAnotherGear(allowedGearsMap[m[i][j]], r)
-					newDistance := distance[[2]int{i, j}][r] + switchGearTime
-					if newDistance < distance[[2]int{i, j}][another] {
-						distance[[2]int{i, j}][another], done = newDistance, false
-					}
-				}
-				for _, dir := range dirs {
-					x, y := j+dir[1], i+dir[0]
-					if (x < 0) || (x == mapW) || (y < 0) || (y == mapH) {
-						continue
-					}
-					for _, r := range allowedGearsMap[m[y][x]] {
-						newDistance := distance[[2]int{i, j}][r] + 1
-						if newDistance < distance[[2]int{y, x}][r] {
-							distance[[2]int{y, x}][r], done = newDistance, false
-						}
-					}
+				if visit(i, j) {
+					done = false
 				}
 			}
 		}
