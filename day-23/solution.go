@@ -87,8 +87,8 @@ func getDistance(r robot, pos [3]int64) int64 {
 // }
 
 func secondChallenge(bots []robot) {
-	bestSum, bestDistance, targetBots, bestVertex := 0, int64(math.MaxInt64), []int{}, [3]int64{}
-	for _, b := range bots {
+	bestSum, bestDistance, targetBots, bestVertex, bestBotIndex := 0, int64(math.MaxInt64), []int{}, [3]int64{}, 0
+	for k, b := range bots {
 		for _, v := range genVertices(b) {
 			sum, distanceToV, potentialBots := 0, getDistance(origin, v), []int{}
 			for k, d := range bots {
@@ -101,13 +101,23 @@ func secondChallenge(bots []robot) {
 				fmt.Println(v)
 				bestDistance, bestSum, targetBots, bestVertex = distanceToV, sum, potentialBots, v
 				fmt.Println(b)
+				bestBotIndex = k
 			} else if (sum == bestSum) && (bestDistance > distanceToV) {
 				bestDistance = distanceToV
 				fmt.Println("concern", v)
 			}
 		}
 	}
-	fmt.Println(targetBots, bestVertex)
+
+	slack := int64(math.MaxInt64)
+	for k, i := range targetBots {
+		if k == bestBotIndex {
+			continue
+		}
+		slack = min(slack, bots[i].r-getDistance(bots[i], bestVertex))
+	}
+	fmt.Println(bestVertex, bots[bestBotIndex], slack, getDistance(origin, bestVertex))
+
 	// The question is, can this best Vertext be moved somewhere eles?
 }
 
