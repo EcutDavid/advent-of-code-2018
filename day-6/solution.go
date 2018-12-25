@@ -111,8 +111,7 @@ func distance(a, b [2]int) int {
 }
 
 func secondChallenge() {
-	xyList := getInput()
-	maxX, maxY := 0, 0
+	xyList, maxX, maxY := getInput(), 0, 0
 	for i := 0; i < len(xyList); i++ {
 		if xyList[i][0] > maxX {
 			maxX = xyList[i][0]

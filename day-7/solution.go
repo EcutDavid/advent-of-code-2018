@@ -62,20 +62,20 @@ func getDistance(s string, fir int) int {
 	return int(s[0]-"A"[0]+1) + fir
 }
 
-type queueItem struct {
+type job struct {
 	tar       string
 	distance  int
 	hasWorker bool
 }
-type taskQueue []queueItem
+type jobs []job
 
-func (t taskQueue) Len() int {
+func (t jobs) Len() int {
 	return len(t)
 }
-func (t taskQueue) Swap(i, j int) {
+func (t jobs) Swap(i, j int) {
 	t[i], t[j] = t[j], t[i]
 }
-func (t taskQueue) Less(i, j int) bool {
+func (t jobs) Less(i, j int) bool {
 	if t[i].distance != t[j].distance {
 		return t[i].distance < t[j].distance
 	}
@@ -88,10 +88,10 @@ func calcDistance(s [][2]string, adjList map[string]map[string]bool) int {
 		inDegree[v[1]], p[v[0]], p[v[1]] = inDegree[v[1]]+1, true, true
 	}
 
-	queue := taskQueue{}
+	queue := jobs{}
 	for k := range p {
 		if inDegree[k] == 0 {
-			queue = append(queue, queueItem{k, getDistance(k, factor), false})
+			queue = append(queue, job{k, getDistance(k, factor), false})
 		}
 	}
 	for i := 0; i < len(queue); i++ {
@@ -116,7 +116,7 @@ func calcDistance(s [][2]string, adjList map[string]map[string]bool) int {
 		for k := range adjList[task.tar] {
 			inDegree[k]--
 			if inDegree[k] == 0 {
-				queue = append(queue, queueItem{k, getDistance(k, factor), false})
+				queue = append(queue, job{k, getDistance(k, factor), false})
 			}
 		}
 

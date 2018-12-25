@@ -9,6 +9,12 @@ My solutions for [adventofcode.com/2018](https://adventofcode.com/2018)
 | 3  | Because the "claims" all have small width and height, simply create a two-dimensional array, initialize all the slot to 0, and increment the slot based on the claim, the answer can be found.|
 | 4  | Sort the input lines alphabetically, the result would be time increasing order, the answer can be found by analysing the intersections.|
 | 5  | Using a doubly linked list to sort all the items, loop them until there is a loop has no collision, whenever there is a collision, drop two nodes from the list.|
+| 7  | A typical topological sort problem, had fun in simulating the workers. |
+| 8  | We can parse the tree recursively from the input, then, walk the tree to find the solution. |
+| 9  | A great use case for the double linked list. |
+| 10 | A fun question, need generate the "text" and watch console to identify what's the text. |
+| 11 | Solved this problem with brute force, must be solutions that much faster there. |
+| 12 | "Solved" the second problem by yet again, like day-10, finding patterns. |
 | 14 | Can be solved by brute force, just keep doing what the question asks us to do until the answer appears.|
 | 15 | A fun breadth-first graph search question, very easy to miss conditions and edge cases, a super nice graph question!|
 | 16 | Need carefully simulate the 16 ASM operations, can use hashmaps to generate the relationship between id(the first number) and operation, due to the input is small, didn't try to make the algorithm run faster.|
