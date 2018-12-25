@@ -1,4 +1,5 @@
-// This one is so hard(for the current me)... Sorry for the messy code, gonna spend 0.5 hour this weekend clean the code.
+// Did badly at this problem, don't have to gen tracks and adj list, because the carts will always be on the routes, and pure ASCII is enough for deciding which direction to turn.
+// Because ^, don't look at the code, it's very messy!
 // Good problem!
 package main
 
@@ -140,7 +141,7 @@ func (c *cart) move(adjList map[[2]int]map[[2]int]bool) [2]int {
 	newMoves := adjList[c.pos]
 	if len(newMoves) == 4 {
 		if c.dirSwitcher == 0 {
-			c.dirPointer = (c.dirPointer + 4 - 1) % 4
+			c.dirPointer = (c.dirPointer + 3) % 4
 		}
 		if c.dirSwitcher == 2 {
 			c.dirPointer = (c.dirPointer + 1) % 4
@@ -162,7 +163,7 @@ func (c *cart) move(adjList map[[2]int]map[[2]int]bool) [2]int {
 				antiClock = false
 			}
 			if antiClock {
-				c.dirPointer = (c.dirPointer + 4 - 1) % 4
+				c.dirPointer = (c.dirPointer + 3) % 4
 			} else {
 				c.dirPointer = (c.dirPointer + 1) % 4
 			}
