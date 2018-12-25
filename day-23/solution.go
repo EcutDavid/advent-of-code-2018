@@ -22,21 +22,6 @@ func abs(a int64) int64 {
 	return a
 }
 
-func firstChallenge(bots []robot) {
-	bestR, best := -1, int64(0)
-	for i := 0; i < len(bots); i++ {
-		if bots[i].r > best {
-			best, bestR = bots[i].r, i
-		}
-	}
-	sum := 0
-	for i := 0; i < len(bots); i++ {
-		if getDistance(bots[i].pos, bots[bestR].pos) <= bots[bestR].r {
-			sum++
-		}
-	}
-	fmt.Println(sum)
-}
 func min(a, b int64) int64 {
 	if a > b {
 		return b
@@ -68,11 +53,27 @@ func getDistance(a, b [3]int64) int64 {
 	return sum
 }
 
+func firstChallenge(bots []robot) {
+	bestR, best := -1, int64(0)
+	for i := 0; i < len(bots); i++ {
+		if bots[i].r > best {
+			best, bestR = bots[i].r, i
+		}
+	}
+	sum := 0
+	for i := 0; i < len(bots); i++ {
+		if getDistance(bots[i].pos, bots[bestR].pos) <= bots[bestR].r {
+			sum++
+		}
+	}
+	fmt.Println(sum)
+}
+
 func secondChallenge(bots []robot) {
-	bestSum, bestDistance, targetBots, bestVertex, bestBotIndex := 0, int64(math.MaxInt64), []int{}, [3]int64{}, 0
-	for k, b := range bots {
+	bestSum, targetBots, bestVertex := 0, []int{}, [3]int64{}
+	for _, b := range bots {
 		for _, v := range genVertices(b) {
-			sum, distanceToV, potentialBots := 0, getDistance(origin, v), []int{}
+			sum, potentialBots := 0, []int{}
 			for k, d := range bots {
 				if getDistance(d.pos, v) <= d.r {
 					sum++
@@ -80,27 +81,56 @@ func secondChallenge(bots []robot) {
 				}
 			}
 			if sum > bestSum {
-				fmt.Println(v)
-				bestDistance, bestSum, targetBots, bestVertex = distanceToV, sum, potentialBots, v
-				fmt.Println(b)
-				bestBotIndex = k
-			} else if (sum == bestSum) && (bestDistance > distanceToV) {
-				bestDistance = distanceToV
-				fmt.Println("concern", v)
+				bestSum, targetBots, bestVertex = sum, potentialBots, v
+			}
+		}
+	}
+	vertexMap := map[[3]int64]bool{}
+	for _, b := range bots {
+		for _, v := range genVertices(b) {
+			sum := 0
+			for _, d := range bots {
+				if getDistance(d.pos, v) <= d.r {
+					sum++
+				}
+			}
+			if sum == bestSum {
+				if vertexMap[v] {
+					continue
+				}
+				vertexMap[v] = true
+				fmt.Println("potential vertex", v)
 			}
 		}
 	}
 
-	slack := int64(math.MaxInt64)
-	for k, i := range targetBots {
-		if k == bestBotIndex {
-			continue
+	validate := func(testVertex [3]int64) bool {
+		for _, index := range targetBots {
+			if getDistance(testVertex, bots[index].pos) > bots[index].r {
+				return false
+			}
 		}
-		slack = min(slack, bots[i].r-getDistance(bots[i].pos, bestVertex))
+		return true
 	}
-	fmt.Println(bestVertex, bots[bestBotIndex], slack, getDistance(origin, bestVertex))
 
-	// The question is, can this best Vertext be moved somewhere eles?
+	queue, visited := [][3]int64{bestVertex}, map[[3]int64]bool{bestVertex: true}
+	dirs, bestDistance := [][3]int64{[3]int64{0, 0, -1}, [3]int64{-1, 0, 0}, [3]int64{0, -1, 0}}, int64(math.MaxInt64)
+	for len(queue) > 0 {
+		task, distance := queue[0], getDistance(queue[0], origin)
+		if distance < bestDistance {
+			bestDistance = distance
+		}
+		queue = queue[1:]
+		for _, d := range dirs {
+			newPos := [3]int64{task[0] + d[0], task[1] + d[1], task[2] + d[2]}
+			if visited[newPos] || !validate(newPos) {
+				continue
+			}
+			visited[newPos], queue = true, append(queue, newPos)
+		}
+	}
+
+	fmt.Println("final deal", bestDistance)
 }
 
 func parseInput() []robot {
