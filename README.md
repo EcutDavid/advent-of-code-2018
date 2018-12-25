@@ -15,4 +15,5 @@ My solutions for [adventofcode.com/2018](https://adventofcode.com/2018)
 * Day 20: Parsing a graph from the input, then, DFS to walk through the map, the hard part of parsing the input, used a recursive solution to solve that part. Wrote a more detailed explanation in [this blog](https://medium.com/@davidguandev/aoc-2018-day-20-a-regular-map-1ef024e85c22).
 * Day 21: This is a day-19 follow up question, need to parse the asm code then find the trick there, to solve the problem.
 * Day 22: From problem 2, need to generate a map that is bigger than (0, 0) - (`targetX` - `targetY`), and then, run Bellman–Ford or Dijkstra's algorithm to get the shortest path to the target.
-* Day 24: A pretty starigforawrd challenge need use binary search for the second challenge to spend less time on validations.
+* Day 24: A pretty starigforawrd challenge, need use binary search for the second challenge to spend less time on validations.
+

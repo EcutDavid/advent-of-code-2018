@@ -1,4 +1,3 @@
-// Still work in progress, current solution has a hole in logic which I still didn't find out where
 package main
 
 import (
