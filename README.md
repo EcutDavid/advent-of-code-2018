@@ -1,6 +1,8 @@
 # Advent of Code 2018
 My solutions for [adventofcode.com/2018](https://adventofcode.com/2018)
 
+![](https://user-images.githubusercontent.com/10692276/50415041-fd429480-086c-11e9-8f6d-0e19ce13b984.png)
+
 ## My Solutions
 | Day | Notes |
 |---|-------|
