@@ -1,57 +1,55 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
-type dobuleLinkedList struct {
-	next *dobuleLinkedList
-	prev *dobuleLinkedList
-	val  int
+// Go has its own circular linked node list implementation, implement own one for fun.
+type circularLinkedNode struct {
+	prev, next *circularLinkedNode
+	val        int
 }
 
-func (l *dobuleLinkedList) insert(val int) *dobuleLinkedList {
-	newNode := dobuleLinkedList{val: val}
-	oldNext := l.next
-	l.next, oldNext.prev = &newNode, &newNode
-	newNode.prev, newNode.next = l, oldNext
-	return &newNode
-}
-func (l *dobuleLinkedList) delete() *dobuleLinkedList {
-	res := l.next
-	l.prev.next, l.next.prev = res, res
-	return res
+func (node *circularLinkedNode) insert(newNode *circularLinkedNode) {
+	newNode.next, newNode.prev = node.next, node
+	node.next, node.next.prev = newNode, newNode
 }
 
-func calc(n, p int) {
-	score, node := make([]int64, p), &dobuleLinkedList{val: 0}
-	node.next, node.prev = node, node
+// For this question, we don't have to worry whether there is only one node left in the list.
+func (node *circularLinkedNode) delete() {
+	node.prev.next, node.next.prev = node.next, node.prev
+}
 
-	counter := 1
-	for i := 1; i <= p; i++ {
+func solve(lastM, pCount int) {
+	currentNode, scoreMap := &(circularLinkedNode{nil, nil, 0}), map[int]int{}
+	currentNode.next, currentNode.prev = currentNode, currentNode
+	for i := 1; i <= lastM; i++ {
 		if i%23 == 0 {
-			for j := 0; j < 7; j++ {
-				node = node.prev
+			userID := i%pCount + 1
+			for i := 0; i < 7; i++ {
+				currentNode = currentNode.prev
 			}
-			score[counter] += int64(i + node.val)
-			node = node.delete()
+			currentNode.delete()
+			scoreMap[userID] += i + currentNode.val
+			currentNode = currentNode.next
 		} else {
-			node = node.next.insert(i)
-		}
-		counter = (counter + 1) % n
-	}
-
-	max := int64(0)
-	for i := 0; i < len(score); i++ {
-		if score[i] > max {
-			max = score[i]
+			newNode := &(circularLinkedNode{nil, nil, i})
+			currentNode.next.insert(newNode)
+			currentNode = newNode
 		}
 	}
-	fmt.Println(max)
+	max := 0
+	for _, v := range scoreMap {
+		if v > max {
+			max = v
+		}
+	}
+	fmt.Printf("When there are %d players, last marble is worth %d, highest score is: %d\n", pCount, lastM, max)
 }
 
 func main() {
-	calc(9, 25)
-	calc(403, 71920)
-	calc(403, 7192000)
+	solve(25, 9)
+	solve(71920, 403)
+	solve(72019, 458)
+
+	// Second problem
+	solve(71920*100, 403)
 }
